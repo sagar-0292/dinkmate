@@ -1,0 +1,38 @@
+{
+  "name": "dinkmate",
+  "version": "1.0.0",
+  "description": "DinkMate — The premium pickleball social, matching & marketplace app",
+  "main": "public/index.html",
+  "scripts": {
+    "start": "npx serve public -l 3000",
+    "dev": "npx live-server public --port=3000 --open",
+    "export": "node scripts/export-data.js",
+    "export:user": "node scripts/export-data.js --user",
+    "backup": "bash backend/backup.sh",
+    "deploy:netlify": "netlify deploy --prod --dir=public",
+    "deploy:check": "node -e \"const fs=require('fs'); const html=fs.readFileSync('public/index.html','utf8'); const checks=['manifest','serviceWorker','DM_ANALYTICS']; checks.forEach(c => console.log((html.includes(c)?'✓':'✗')+' '+c)); console.log('Build check complete');\""
+  },
+  "keywords": [
+    "pickleball",
+    "social",
+    "marketplace",
+    "matching",
+    "pwa",
+    "sports"
+  ],
+  "author": "DinkMate Team",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0",
+    "live-server": "^1.2.2",
+    "netlify-cli": "^17.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR-USERNAME/dinkmate.git"
+  },
+  "homepage": "https://dinkmate-beta.netlify.app"
+}

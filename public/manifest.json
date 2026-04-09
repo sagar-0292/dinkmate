@@ -1,0 +1,51 @@
+{
+  "name": "DinkMate",
+  "short_name": "DinkMate",
+  "description": "The premium pickleball social, matching & marketplace app. The Court Is Yours.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06060C",
+  "theme_color": "#06060C",
+  "categories": ["sports", "social", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-feed.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "label": "DinkMate Feed"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Find Players",
+      "short_name": "Match",
+      "description": "Swipe to find pickleball players",
+      "url": "/?screen=match",
+      "icons": [{"src": "/icon-192.svg", "sizes": "192x192"}]
+    },
+    {
+      "name": "Shop",
+      "short_name": "Shop",
+      "description": "Buy premium pickleball gear",
+      "url": "/?screen=market",
+      "icons": [{"src": "/icon-192.svg", "sizes": "192x192"}]
+    }
+  ]
+}
