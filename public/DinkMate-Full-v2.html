@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>DinkMate — The Court Is Yours</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --g1:#F5D98A;--g2:#D4A843;--g3:#B8872A;--g4:#8A6118;
+  --gold-grad:linear-gradient(135deg,#F5D98A 0%,#D4A843 50%,#B8872A 100%);
+  --gold-shine:linear-gradient(135deg,#FFF8E7 0%,#F5D98A 30%,#D4A843 60%,#8A6118 100%);
+  --bg:#06060C;--bg2:#0C0C18;--bg3:#111122;--bg4:#181830;--bg5:#202040;
+  --card:#141426;--surf:#1C1C32;--lift:#24243C;
+  --pass:#FF4757;--play:#2ED573;--royal:#7B68EE;--teal:#00D2D3;
+  --t1:#F2EFE8;--t2:#A09070;--t3:#504858;--t4:#282838;
+  --b1:rgba(212,168,67,.3);--b2:rgba(212,168,67,.15);--b3:rgba(248,244,236,.06);
+  --serif:'Playfair Display',Georgia,serif;--sans:'Jost',system-ui,sans-serif;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--sans);color:var(--t1);overflow:hidden}
+.app{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.device{
+  width:min(390px,100vw);height:min(844px,100vh);
+  background:var(--bg2);border-radius:min(52px,5vw);
+  overflow:hidden;display:flex;flex-direction:column;
+  border:1px solid var(--b1);position:relative;
+}
+/* ── STATUS BAR ── */
+.statusbar{height:48px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 26px;background:var(--bg2)}
+.sb-time{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--g1)}
+.sb-r{display:flex;align-items:center;gap:6px}
+/* ── SCREENS ── */
+.screen{flex:1;overflow:hidden;display:none;flex-direction:column;background:var(--bg2)}
+.screen.active{display:flex}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden}
+.scroll::-webkit-scrollbar{width:2px}
+.scroll::-webkit-scrollbar-thumb{background:var(--b1);border-radius:2px}
+/* ── BOTTOM NAV ── */
+.bnav{height:76px;flex-shrink:0;background:var(--bg2);border-top:1px solid rgba(212,168,67,.15);display:flex;align-items:center;justify-content:space-around;padding-bottom:10px}
+.bni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 10px;border-radius:14px;min-width:52px;transition:all .18s}
+.bni:active{background:rgba(212,168,67,.06)}
+.bni-lbl{font-size:9px;font-weight:500;color:var(--t3);letter-spacing:.8px;text-transform:uppercase}
+.bni.on .bni-lbl{color:var(--g2)}
+.bni-add{width:50px;height:50px;border-radius:16px;background:var(--gold-grad);display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:-12px;box-shadow:0 4px 20px rgba(212,168,67,.3)}
+/* ── SHARED ── */
+.hdr{padding:12px 20px 10px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.hdr-title{font-family:var(--serif);font-size:22px;font-weight:500;color:var(--t1)}
+.ibtn{width:38px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;flex-shrink:0;position:relative}
+.ibtn:active{background:var(--surf)}
+.pill{padding:7px 16px;border-radius:22px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid;letter-spacing:.3px}
+.pill-on{background:var(--gold-grad);color:var(--bg);border-color:var(--g2);font-weight:600}
+.pill-off{background:var(--card);color:var(--t2);border-color:var(--b2)}
+.tag{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid}
+.tg{background:rgba(212,168,67,.12);color:var(--g1);border-color:var(--b1)}
+.tb{background:rgba(123,104,238,.12);color:#ABA4FF;border-color:rgba(123,104,238,.3)}
+.tn{background:rgba(46,213,115,.1);color:#6EE89A;border-color:rgba(46,213,115,.25)}
+.tp{background:rgba(0,210,211,.1);color:#6EF0F1;border-color:rgba(0,210,211,.25)}
+.divl{height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.25),transparent)}
+.toast{position:absolute;top:60px;left:50%;transform:translateX(-50%) translateY(-12px);background:var(--lift);border:1px solid var(--b1);color:var(--g1);font-size:13px;font-weight:500;padding:10px 20px;border-radius:24px;opacity:0;pointer-events:none;z-index:300;white-space:nowrap;transition:opacity .22s,transform .22s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-bg{position:absolute;inset:0;z-index:80;background:rgba(4,4,12,.96);display:none;align-items:center;justify-content:center;border-radius:inherit}
+.modal-bg.open{display:flex}
+.overlay{position:absolute;inset:0;z-index:60;background:var(--bg2);border-radius:inherit;display:none;flex-direction:column}
+.overlay.open{display:flex}
+/* ── INPUT STYLES ── */
+.field-wrap{margin-bottom:16px}
+.field-label{font-size:11px;font-weight:500;color:var(--t2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.field-input{width:100%;padding:13px 16px;background:var(--card);border:1px solid var(--b2);border-radius:14px;font-family:var(--sans);font-size:14px;color:var(--t1);outline:none;transition:border-color .2s}
+.field-input:focus{border-color:var(--b1)}
+.field-input::placeholder{color:var(--t3)}
+select.field-input{cursor:pointer}
+select.field-input option{background:var(--bg3);color:var(--t1)}
+.gold-btn{width:100%;padding:15px;border-radius:16px;background:var(--gold-grad);border:none;font-family:var(--sans);font-size:15px;font-weight:600;color:var(--bg);cursor:pointer;letter-spacing:.3px;box-shadow:0 4px 20px rgba(212,168,67,.25);transition:all .18s}
+.gold-btn:hover{box-shadow:0 6px 28px rgba(212,168,67,.35)}
+.gold-btn:active{transform:scale(.98)}
+.gold-btn:disabled{opacity:.5;cursor:not-allowed}
+.ghost-btn{width:100%;padding:13px;border-radius:16px;background:transparent;border:1px solid var(--b2);font-family:var(--sans);font-size:14px;font-weight:500;color:var(--t2);cursor:pointer;letter-spacing:.2px;transition:all .18s}
+.ghost-btn:hover{border-color:var(--b1);color:var(--g1)}
+/* ── LOADER ── */
+.loader-screen{position:absolute;inset:0;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;border-radius:inherit}
+.loader-logo{font-family:var(--serif);font-size:36px;font-weight:600;background:var(--gold-shine);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.loader-sub{font-size:12px;color:var(--t2);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px}
+.loader-dots{display:flex;gap:8px}
+.ldot{width:8px;height:8px;border-radius:50%;background:var(--g2);animation:ldot 1.2s ease-in-out infinite}
+.ldot:nth-child(2){animation-delay:.2s}
+.ldot:nth-child(3){animation-delay:.4s}
+@keyframes ldot{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+/* ── AUTH SCREEN ── */
+.auth-screen{position:absolute;inset:0;background:var(--bg2);z-index:150;display:flex;flex-direction:column;border-radius:inherit;overflow-y:auto}
+.auth-screen::-webkit-scrollbar{display:none}
+.auth-hero{padding:40px 28px 24px;text-align:center}
+.auth-logo{font-family:var(--serif);font-size:40px;font-weight:600;background:var(--gold-shine);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.auth-tagline{font-size:13px;color:var(--t2);letter-spacing:2px;text-transform:uppercase}
+.auth-form{padding:0 28px 32px}
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;background:var(--card);border-radius:14px;padding:4px;border:1px solid var(--b2)}
+.auth-tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;border-radius:10px;transition:all .18s;color:var(--t2)}
+.auth-tab.on{background:var(--gold-grad);color:var(--bg);font-weight:600}
+.auth-err{padding:10px 14px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);border-radius:10px;font-size:13px;color:#FF9090;margin-bottom:14px;display:none}
+.auth-err.show{display:block}
+/* ── ONBOARDING ── */
+.onboard{position:absolute;inset:0;background:var(--bg2);z-index:140;display:none;flex-direction:column;border-radius:inherit;overflow-y:auto}
+.onboard.open{display:flex}
+.onboard::-webkit-scrollbar{display:none}
+.onboard-step{display:none;padding:24px 24px 32px;flex-direction:column;flex:1}
+.onboard-step.active{display:flex}
+.ob-progress{display:flex;gap:6px;padding:16px 24px 0;flex-shrink:0}
+.ob-bar{flex:1;height:3px;border-radius:2px;background:var(--bg4);transition:background .3s}
+.ob-bar.done{background:var(--g2)}
+.ob-title{font-family:var(--serif);font-size:26px;font-weight:500;color:var(--t1);margin-bottom:6px}
+.ob-sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.6}
+.photo-upload{width:100px;height:100px;border-radius:50%;background:var(--card);border:2px dashed var(--b1);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin:0 auto 20px;font-size:11px;color:var(--t2);gap:6px;overflow:hidden;position:relative}
+.photo-upload img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.photo-upload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.play-styles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.style-card{padding:14px;border-radius:14px;background:var(--card);border:1px solid var(--b2);cursor:pointer;transition:all .18s;text-align:center}
+.style-card.sel{border-color:var(--g2);background:rgba(212,168,67,.08)}
+.style-card .icon{font-size:24px;margin-bottom:6px}
+.style-card .name{font-size:13px;font-weight:500;color:var(--t1)}
+.style-card .desc{font-size:11px;color:var(--t2);margin-top:2px}
+.avail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.avail-pill{padding:10px;border-radius:12px;background:var(--card);border:1px solid var(--b2);cursor:pointer;text-align:center;font-size:12px;font-weight:500;color:var(--t2);transition:all .18s}
+.avail-pill.sel{border-color:var(--g2);color:var(--g1);background:rgba(212,168,67,.08)}
+/* ── FEED ── */
+.feed-logo{font-family:var(--serif);font-size:24px;font-weight:600;background:var(--gold-shine);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stories-row{display:flex;gap:12px;padding:6px 20px 14px;overflow-x:auto}
+.stories-row::-webkit-scrollbar{display:none}
+.story{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0}
+.sring{width:60px;height:60px;border-radius:50%;padding:2.5px}
+.sring-live{background:conic-gradient(from 0deg,#F5D98A,#D4A843,#FF6B6B,#7B68EE,#F5D98A)}
+.sring-add{background:var(--card);border:1.5px solid var(--b2)}
+.sring-seen{background:var(--surf)}
+.sav{width:100%;height:100%;border-radius:50%;background:var(--surf);border:2.5px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden}
+.sav img{width:100%;height:100%;object-fit:cover}
+.sname{font-size:10px;color:var(--t2);max-width:60px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.post{background:var(--bg2);margin-bottom:1px}
+.post-hd{display:flex;align-items:center;gap:10px;padding:12px 16px 10px}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.pname{font-size:14px;font-weight:500;color:var(--t1)}
+.psub{font-size:11px;color:var(--t2);margin-top:1px}
+.spon-tag{font-size:9px;padding:2px 7px;border-radius:6px;font-weight:600;margin-left:6px;background:rgba(212,168,67,.15);color:var(--g1);border:1px solid var(--b1);letter-spacing:.5px;text-transform:uppercase}
+.pmedia{width:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:200px}
+.pmedia img{width:100%;height:100%;object-fit:cover}
+.pmedia-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:32px;width:100%}
+.pactions{display:flex;align-items:center;padding:10px 16px 6px;gap:16px}
+.pabtn{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--t2);cursor:pointer;transition:color .15s}
+.pabtn:hover{color:var(--t1)}
+.pabtn.liked{color:var(--pass)}
+.plikes{padding:0 16px 4px;font-size:13px;font-weight:500;color:var(--t1)}
+.pcap{padding:0 16px 6px;font-size:13px;color:var(--t2);line-height:1.55}
+.pcap b{color:var(--t1);font-weight:500}
+.ptags{padding:0 16px 4px;font-size:12px;color:var(--royal)}
+.ptime{padding:0 16px 12px;font-size:11px;color:var(--t3);letter-spacing:.3px;text-transform:uppercase}
+.empty-feed{text-align:center;padding:48px 24px;color:var(--t2)}
+.empty-feed .icon{font-size:48px;margin-bottom:14px;display:block}
+.empty-feed h3{font-family:var(--serif);font-size:20px;color:var(--t1);margin-bottom:8px}
+.empty-feed p{font-size:13px;line-height:1.6}
+/* ── MATCH ── */
+.fpills{display:flex;gap:8px;padding:0 20px 12px;overflow-x:auto}
+.fpills::-webkit-scrollbar{display:none}
+.deck-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0 20px}
+.deck-wrap{position:relative;width:100%;display:flex;justify-content:center;min-height:460px}
+.pcard-shadow{width:min(306px,calc(100vw-60px));border-radius:28px;position:absolute;top:10px;background:var(--card);border:1px solid rgba(212,168,67,.1);height:60px;pointer-events:none;transform:scale(.97) translateY(4px);z-index:1}
+.pcard{width:min(322px,calc(100vw-40px));border-radius:28px;position:absolute;background:var(--card);border:1px solid var(--b1);overflow:hidden;cursor:grab;will-change:transform;touch-action:none;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.pcard:active{cursor:grabbing}
+.cphoto{width:100%;height:310px;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;gap:8px;overflow:hidden}
+.cphoto img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.cphoto-inner{z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px}
+.cphoto-av{width:90px;height:90px;border-radius:50%;background:var(--surf);border:2px solid rgba(212,168,67,.25);display:flex;align-items:center;justify-content:center;font-size:42px;overflow:hidden}
+.cphoto-av img{width:100%;height:100%;object-fit:cover}
+.csub-tag{font-size:11px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);padding:4px 14px;border-radius:20px;letter-spacing:.5px}
+.cfade{position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(transparent,var(--card));z-index:1}
+.chint{position:absolute;padding:6px 16px;border-radius:8px;font-size:20px;font-weight:700;letter-spacing:2px;opacity:0;pointer-events:none;transition:opacity .1s;font-family:var(--serif);z-index:2}
+.chint-play{top:20px;left:20px;color:var(--play);border:2.5px solid var(--play);background:rgba(46,213,115,.1);transform:rotate(-12deg)}
+.chint-pass{top:20px;right:20px;color:var(--pass);border:2.5px solid var(--pass);background:rgba(255,71,87,.1);transform:rotate(12deg)}
+.cbody{padding:14px 16px 16px}
+.cname-row{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.cname{font-family:var(--serif);font-size:22px;font-weight:500;color:var(--t1)}
+.cage{font-size:16px;font-weight:300;color:var(--t2)}
+.vdot{width:20px;height:20px;border-radius:50%;background:var(--gold-grad);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--bg);font-weight:700;flex-shrink:0}
+.cloc{font-size:13px;color:var(--t2);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.olive{width:7px;height:7px;border-radius:50%;background:var(--play);flex-shrink:0}
+.ctags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.cbio{font-size:13px;color:var(--t2);line-height:1.5;margin-bottom:12px}
+.cstats{display:flex;background:var(--surf);border-radius:12px;overflow:hidden;border:1px solid var(--b3)}
+.cstat{flex:1;padding:10px 6px;text-align:center;border-right:1px solid var(--b3)}
+.cstat:last-child{border-right:none}
+.cstat-v{font-family:var(--serif);font-size:16px;font-weight:500;color:var(--g1)}
+.cstat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.swipe-btns{flex-shrink:0;padding:14px 20px 10px;display:flex;align-items:center;justify-content:center;gap:14px}
+.sab{border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px solid;transition:all .15s}
+.sab:active{transform:scale(.88)!important}
+.sab-sm{width:48px;height:48px}
+.sab-md{width:60px;height:60px}
+.sab-pass{background:rgba(255,71,87,.08);border-color:var(--pass)}
+.sab-rew{background:rgba(123,104,238,.08);border-color:var(--royal)}
+.sab-sup{background:rgba(212,168,67,.08);border-color:var(--g2)}
+.sab-play{background:rgba(46,213,115,.08);border-color:var(--play)}
+.sab-boost{background:rgba(0,210,211,.08);border-color:var(--teal)}
+.sab:hover{transform:scale(1.06)}
+/* match modal */
+.match-modal{text-align:center;padding:28px 24px;width:100%}
+.match-sparks{font-size:28px;letter-spacing:6px;margin-bottom:14px}
+.match-hl{font-family:var(--serif);font-size:36px;font-weight:600;background:var(--gold-shine);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.match-sub{font-size:13px;color:var(--t2);margin-bottom:22px;line-height:1.6}
+.match-avs{display:flex;justify-content:center;align-items:center;margin-bottom:22px}
+.match-av{width:78px;height:78px;border-radius:50%;border:3px solid var(--g2);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:34px;overflow:hidden}
+.match-av img{width:100%;height:100%;object-fit:cover}
+.match-vs{width:26px;height:26px;border-radius:50%;background:var(--gold-grad);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--bg);z-index:2;margin:0 -10px;flex-shrink:0}
+.match-btn{width:100%;padding:14px;border-radius:16px;background:var(--gold-grad);border:none;font-family:var(--sans);font-size:15px;font-weight:600;color:var(--bg);cursor:pointer;margin-bottom:10px}
+.match-skip{font-size:13px;color:var(--t2);cursor:pointer;padding:6px}
+/* ── MESSAGES ── */
+.conv-list{display:flex;flex-direction:column}
+.conv-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--b3)}
+.conv-item:active{background:rgba(212,168,67,.04)}
+.conv-av-wrap{position:relative;flex-shrink:0}
+.conv-online{position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;background:var(--play);border:2px solid var(--bg2)}
+.conv-info{flex:1;min-width:0}
+.conv-name{font-size:14px;font-weight:500;color:var(--t1);margin-bottom:2px}
+.conv-prev{font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.conv-time{font-size:10px;color:var(--t3);letter-spacing:.3px;text-transform:uppercase}
+.conv-badge{width:18px;height:18px;border-radius:50%;background:var(--gold-grad);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--bg)}
+/* chat */
+.chat-view{position:absolute;inset:0;z-index:50;background:var(--bg2);border-radius:inherit;display:none;flex-direction:column}
+.chat-view.open{display:flex}
+.chat-hd{padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--b2);flex-shrink:0}
+.chat-name{font-family:var(--serif);font-size:17px;font-weight:500;color:var(--t1)}
+.chat-status{font-size:12px;color:var(--play);letter-spacing:.2px}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.chat-msgs::-webkit-scrollbar{display:none}
+.msg{max-width:76%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.55;letter-spacing:.1px}
+.msg-in{background:var(--surf);color:var(--t1);border-bottom-left-radius:4px;align-self:flex-start;border:1px solid var(--b3)}
+.msg-out{background:var(--lift);color:var(--t1);border-bottom-right-radius:4px;align-self:flex-end;border:1px solid rgba(212,168,67,.12)}
+.msg-time{font-size:10px;color:var(--t3);text-align:center;align-self:center;letter-spacing:.5px;text-transform:uppercase}
+.chat-inp-row{padding:10px 16px 14px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--b2);flex-shrink:0}
+.chat-inp{flex:1;padding:10px 14px;background:var(--card);border-radius:22px;border:1px solid var(--b2);font-family:var(--sans);font-size:14px;color:var(--t1);outline:none;transition:border-color .2s}
+.chat-inp:focus{border-color:var(--b1)}
+.chat-inp::placeholder{color:var(--t3)}
+.chat-send{width:38px;height:38px;border-radius:50%;background:var(--gold-grad);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+/* ── MARKET ── */
+.mkt-srch{margin:0 20px 12px;padding:10px 14px;background:var(--card);border-radius:14px;border:1px solid var(--b2);display:flex;align-items:center;gap:8px}
+.mkt-srch input{background:transparent;border:none;outline:none;font-family:var(--sans);font-size:13px;color:var(--t1);flex:1}
+.mkt-srch input::placeholder{color:var(--t3)}
+.mkt-cats{display:flex;gap:8px;padding:0 20px 14px;overflow-x:auto}
+.mkt-cats::-webkit-scrollbar{display:none}
+.mkt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px 16px}
+.mkt-card{background:var(--card);border-radius:18px;overflow:hidden;cursor:pointer;border:1px solid var(--b2);transition:all .18s}
+.mkt-card:active{opacity:.88}
+.mkt-img{width:100%;height:130px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:44px;position:relative;overflow:hidden}
+.mkt-img img{width:100%;height:100%;object-fit:cover}
+.mkt-body{padding:10px 12px 12px}
+.mkt-cond{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;display:inline-block;margin-bottom:4px;letter-spacing:.8px;text-transform:uppercase}
+.cn{background:rgba(46,213,115,.15);color:#6EE89A}
+.cu{background:rgba(123,104,238,.15);color:#ABA4FF}
+.cb{background:rgba(212,168,67,.15);color:var(--g1)}
+.mkt-name{font-size:12px;font-weight:500;color:var(--t1);line-height:1.4;margin-bottom:3px}
+.mkt-price{font-family:var(--serif);font-size:16px;font-weight:500;color:var(--g1)}
+.mkt-seller{font-size:10px;color:var(--t3);margin-top:3px}
+/* prod sheet */
+.prod-sheet{position:absolute;inset:0;z-index:50;background:var(--bg2);border-radius:inherit;display:none;flex-direction:column}
+.prod-sheet.open{display:flex}
+.prod-img{width:100%;height:240px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:88px;flex-shrink:0;position:relative;overflow:hidden}
+.prod-img img{width:100%;height:100%;object-fit:cover}
+.prod-body{flex:1;overflow-y:auto;padding:20px}
+.prod-body::-webkit-scrollbar{display:none}
+.prod-acts{padding:14px 20px 16px;display:flex;gap:10px;flex-shrink:0;border-top:1px solid var(--b2)}
+.prod-buy{flex:2;padding:14px;border-radius:16px;background:var(--gold-grad);border:none;font-family:var(--sans);font-size:15px;font-weight:600;color:var(--bg);cursor:pointer}
+.prod-save{flex:1;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--b1);font-family:var(--sans);font-size:15px;color:var(--g2);cursor:pointer}
+/* ── PROFILE ── */
+.prof-cover{width:100%;height:140px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:48px;flex-shrink:0;position:relative;overflow:hidden}
+.prof-cover img{width:100%;height:100%;object-fit:cover}
+.prof-av-wrap{position:absolute;bottom:-36px;left:20px}
+.prof-av{width:78px;height:78px;border-radius:50%;background:var(--surf);border:3px solid var(--g2);display:flex;align-items:center;justify-content:center;font-size:32px;overflow:hidden}
+.prof-av img{width:100%;height:100%;object-fit:cover}
+.prof-body{padding:46px 20px 20px}
+.prof-name-row{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.prof-name{font-family:var(--serif);font-size:20px;font-weight:500;color:var(--t1)}
+.prof-handle{font-size:13px;color:var(--t2);margin-bottom:8px}
+.prof-bio{font-size:13px;color:var(--t2);line-height:1.55;margin-bottom:14px}
+.prof-stats{display:flex;background:var(--card);border-radius:16px;overflow:hidden;margin-bottom:14px;border:1px solid var(--b1)}
+.pstat{flex:1;text-align:center;padding:12px 6px;border-right:1px solid var(--b2)}
+.pstat:last-child{border-right:none}
+.pstat-v{font-family:var(--serif);font-size:18px;font-weight:500;color:var(--g1)}
+.pstat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.dupr-card{background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--b1);display:flex;align-items:center;gap:12px}
+.dupr-num{font-family:var(--serif);font-size:30px;font-weight:600;background:var(--gold-shine);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.elite-badge{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;background:var(--gold-grad);color:var(--bg);letter-spacing:.5px;text-transform:uppercase}
+.prof-btns{display:flex;gap:8px;margin-bottom:16px}
+.prof-btn{flex:1;padding:10px;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;text-align:center;border:1px solid;background:transparent;font-family:var(--sans);letter-spacing:.2px;transition:all .18s}
+.pb-def{border-color:var(--b2);color:var(--t2)}
+.pb-def:hover{border-color:var(--b1);color:var(--g1)}
+.pb-gold{border-color:var(--g2);color:var(--g1);background:rgba(212,168,67,.08)}
+.prof-tabs{display:flex;border-bottom:1px solid rgba(212,168,67,.15)}
+.ptab{flex:1;padding:12px;text-align:center;font-size:11px;font-weight:500;color:var(--t2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.8px;text-transform:uppercase}
+.ptab.on{color:var(--g1);border-bottom-color:var(--g2)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px}
+.pthumb{aspect-ratio:1;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;position:relative;overflow:hidden}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+/* edit profile */
+.ep-avatar{width:90px;height:90px;border-radius:50%;background:var(--card);border:2px solid var(--b1);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin:0 auto 20px;font-size:12px;color:var(--t2);gap:5px;overflow:hidden;position:relative}
+.ep-avatar img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.ep-avatar input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+/* ── COMPOSE ── */
+.compose{position:absolute;inset:0;z-index:70;background:var(--bg2);border-radius:inherit;display:none;flex-direction:column}
+.compose.open{display:flex}
+.compose-hd{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b2);flex-shrink:0}
+.compose-hd-title{font-family:var(--serif);font-size:18px;font-weight:500;color:var(--t1)}
+.compose-post-btn{padding:9px 22px;border-radius:14px;background:var(--gold-grad);border:none;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--bg);cursor:pointer}
+.compose-body{flex:1;overflow-y:auto;padding:16px 20px}
+.compose-body::-webkit-scrollbar{display:none}
+.compose-ta{width:100%;background:transparent;border:none;outline:none;font-family:var(--sans);font-size:16px;color:var(--t1);resize:none;line-height:1.65;min-height:100px;letter-spacing:.1px}
+.compose-ta::placeholder{color:var(--t3)}
+.compose-media-preview{width:100%;height:160px;border-radius:14px;object-fit:cover;margin-bottom:12px;display:none}
+/* ── NOTIFS ── */
+.notif-item{display:flex;align-items:flex-start;gap:12px;padding:12px 20px;border-bottom:1px solid var(--b3);cursor:pointer;transition:background .12s}
+.notif-item:active{background:rgba(212,168,67,.03)}
+.notif-txt{flex:1;font-size:13px;color:var(--t2);line-height:1.55}
+.notif-txt b{color:var(--t1);font-weight:500}
+.notif-time{font-size:10px;color:var(--t3);flex-shrink:0;margin-top:2px;letter-spacing:.3px;text-transform:uppercase}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--g2);flex-shrink:0;margin-top:6px}
+/* ── SECTION LABEL ── */
+.sec-lbl{font-size:9px;font-weight:600;color:var(--g2);letter-spacing:2px;text-transform:uppercase;padding:0 20px 10px;display:flex;align-items:center;gap:8px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(212,168,67,.2),transparent)}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="device" id="device">
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <span class="sb-time" id="sbTime">9:41</span>
+    <div class="sb-r">
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x=".5" y="4" width="3" height="8" rx="1" fill="#D4A843" opacity=".4"/><rect x="5" y="2.5" width="3" height="9.5" rx="1" fill="#D4A843" opacity=".65"/><rect x="9.5" y="1" width="3" height="11" rx="1" fill="#D4A843" opacity=".85"/><rect x="14" y="0" width="3" height="12" rx="1" fill="#D4A843"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y="1.5" width="20" height="9" rx="2.5" stroke="#D4A843" stroke-opacity=".3" stroke-width="1"/><rect x="21.5" y="4" width="2.5" height="4" rx="1.2" fill="#D4A843" fill-opacity=".3"/><rect x="2" y="3" width="16" height="6" rx="1.5" fill="#D4A843"/></svg>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- LOADER -->
+  <div class="loader-screen" id="loader">
+    <div class="loader-logo">DinkMate</div>
+    <div class="loader-sub">The Court Is Yours</div>
+    <div class="loader-dots"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div>
+  </div>
+
+  <!-- AUTH SCREEN -->
+  <div class="auth-screen" id="authScreen" style="display:none">
+    <div class="auth-hero">
+      <div style="font-size:52px;margin-bottom:12px">🏓</div>
+      <div class="auth-logo">DinkMate</div>
+      <div class="auth-tagline">The Court Is Yours</div>
+    </div>
+    <div class="auth-form">
+      <div class="auth-tabs">
+        <div class="auth-tab on" id="tab-signin" onclick="switchAuthTab('signin')">Sign in</div>
+        <div class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create account</div>
+      </div>
+      <div class="auth-err" id="authErr"></div>
+      <!-- SIGN IN -->
+      <div id="form-signin">
+        <div class="field-wrap">
+          <div class="field-label">Email</div>
+          <input class="field-input" type="email" id="si-email" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Password</div>
+          <input class="field-input" type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="gold-btn" id="signinBtn" onclick="doSignIn()" style="margin-bottom:12px">Sign in</button>
+        <button class="ghost-btn" onclick="doMagicLink()">Send magic link instead</button>
+        <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--t2);cursor:pointer" onclick="doForgotPassword()">Forgot password?</div>
+      </div>
+      <!-- SIGN UP -->
+      <div id="form-signup" style="display:none">
+        <div class="field-wrap">
+          <div class="field-label">Full name</div>
+          <input class="field-input" type="text" id="su-name" placeholder="Alex Rivera" autocomplete="name">
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Email</div>
+          <input class="field-input" type="email" id="su-email" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Password</div>
+          <input class="field-input" type="password" id="su-pass" placeholder="At least 8 characters" autocomplete="new-password">
+        </div>
+        <button class="gold-btn" id="signupBtn" onclick="doSignUp()">Create account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div class="onboard" id="onboard">
+    <div class="ob-progress" id="obProgress">
+      <div class="ob-bar done" id="ob-bar-1"></div>
+      <div class="ob-bar" id="ob-bar-2"></div>
+      <div class="ob-bar" id="ob-bar-3"></div>
+      <div class="ob-bar" id="ob-bar-4"></div>
+    </div>
+    <!-- Step 1: Photo + basic info -->
+    <div class="onboard-step active" id="ob-step-1">
+      <div style="flex:1;padding:20px 0 0">
+        <div class="ob-title">Welcome to DinkMate 🏓</div>
+        <div class="ob-sub">Set up your player profile so others can find and match with you.</div>
+        <div class="photo-upload" id="photoUpload" onclick="document.getElementById('photoInput').click()">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="4"/></svg>
+          Add photo
+          <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Username</div>
+          <input class="field-input" id="ob-username" placeholder="e.g. alex_pb" autocomplete="off">
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Age</div>
+          <input class="field-input" type="number" id="ob-age" placeholder="25" min="18" max="100">
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">City</div>
+          <input class="field-input" id="ob-city" placeholder="New York, NY">
+        </div>
+      </div>
+      <button class="gold-btn" onclick="obNext(1)">Continue</button>
+    </div>
+    <!-- Step 2: DUPR + skill -->
+    <div class="onboard-step" id="ob-step-2">
+      <div style="flex:1;padding:20px 0 0">
+        <div class="ob-title">Your skill level</div>
+        <div class="ob-sub">This helps us find players at your level. Be honest — better matches come from accurate ratings!</div>
+        <div class="field-wrap">
+          <div class="field-label">DUPR Rating (if you have one)</div>
+          <input class="field-input" type="number" id="ob-dupr" placeholder="e.g. 4.2" step="0.1" min="1.0" max="7.0">
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Self-assessed level</div>
+          <select class="field-input" id="ob-skill">
+            <option value="">Select your level</option>
+            <option value="beginner">Beginner — Learning the basics</option>
+            <option value="intermediate">Intermediate — 2.5–3.5 level</option>
+            <option value="advanced">Advanced — 3.5–4.5 level</option>
+            <option value="pro">Pro — 4.5+ competing in tournaments</option>
+          </select>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Gender</div>
+          <select class="field-input" id="ob-gender">
+            <option value="">Select</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="non-binary">Non-binary</option>
+            <option value="prefer_not">Prefer not to say</option>
+          </select>
+        </div>
+      </div>
+      <button class="gold-btn" onclick="obNext(2)">Continue</button>
+    </div>
+    <!-- Step 3: Play style -->
+    <div class="onboard-step" id="ob-step-3">
+      <div style="flex:1;padding:20px 0 0">
+        <div class="ob-title">How do you play?</div>
+        <div class="ob-sub">Your style helps us match you with compatible partners.</div>
+        <div class="play-styles" id="playStyles">
+          <div class="style-card" onclick="selStyle(this,'dinker')" data-val="dinker">
+            <div class="icon">🎯</div>
+            <div class="name">Dinker</div>
+            <div class="desc">Kitchen master, patient play</div>
+          </div>
+          <div class="style-card" onclick="selStyle(this,'banger')" data-val="banger">
+            <div class="icon">💥</div>
+            <div class="name">Banger</div>
+            <div class="desc">Power shots, aggressive baseline</div>
+          </div>
+          <div class="style-card" onclick="selStyle(this,'all-court')" data-val="all-court">
+            <div class="icon">🏆</div>
+            <div class="name">All-court</div>
+            <div class="desc">Balanced, adapts to opponent</div>
+          </div>
+          <div class="style-card" onclick="selStyle(this,'social')" data-val="social">
+            <div class="icon">😊</div>
+            <div class="name">Social</div>
+            <div class="desc">Fun first, here to enjoy the game</div>
+          </div>
+        </div>
+        <div class="field-wrap" style="margin-top:16px">
+          <div class="field-label">Short bio (optional)</div>
+          <textarea class="field-input" id="ob-bio" rows="2" placeholder="Tell other players a bit about yourself..." style="resize:none"></textarea>
+        </div>
+      </div>
+      <button class="gold-btn" onclick="obNext(3)">Continue</button>
+    </div>
+    <!-- Step 4: Availability -->
+    <div class="onboard-step" id="ob-step-4">
+      <div style="flex:1;padding:20px 0 0">
+        <div class="ob-title">When do you play?</div>
+        <div class="ob-sub">Select all that apply. This helps surface the right matches for your schedule.</div>
+        <div class="avail-grid" id="availGrid">
+          <div class="avail-pill" onclick="togAvail(this,'weekday_am')">Weekday mornings</div>
+          <div class="avail-pill" onclick="togAvail(this,'weekday_pm')">Weekday evenings</div>
+          <div class="avail-pill" onclick="togAvail(this,'weekends')">Weekends</div>
+          <div class="avail-pill" onclick="togAvail(this,'any')">Any time</div>
+        </div>
+        <div class="field-wrap" style="margin-top:20px">
+          <div class="field-label">Paddle brand (optional)</div>
+          <input class="field-input" id="ob-paddle" placeholder="e.g. Joola, Selkirk, Engage">
+        </div>
+      </div>
+      <button class="gold-btn" id="obFinishBtn" onclick="obFinish()">Start playing 🏓</button>
+    </div>
+  </div>
+
+  <!-- ═══ FEED ═══ -->
+  <div class="screen active" id="s-feed">
+    <div class="hdr" style="padding:10px 20px 8px">
+      <div class="feed-logo">DinkMate</div>
+      <div style="display:flex;gap:8px">
+        <div class="ibtn" onclick="go('notifs')">
+          <svg width="18" height="18" fill="none" stroke="#D4A843" stroke-width="1.6" stroke-linecap="round" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span id="notif-dot" style="position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:#FF4757;border:1.5px solid var(--bg2);display:none"></span>
+        </div>
+        <div class="ibtn" onclick="go('messages')">
+          <svg width="18" height="18" fill="none" stroke="#D4A843" stroke-width="1.6" stroke-linecap="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div class="stories-row" id="storiesRow">
+        <div class="story" onclick="openCompose()">
+          <div class="sring sring-add"><div class="sav" id="myStorySav">➕</div></div>
+          <span class="sname">Your story</span>
+        </div>
+      </div>
+      <div class="divl"></div>
+      <div id="feedPosts"><div class="empty-feed"><span class="icon">🏓</span><h3>Loading feed…</h3><p>Fetching posts from the community</p></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ MATCH ═══ -->
+  <div class="screen" id="s-match">
+    <div class="hdr">
+      <div class="hdr-title">Find Players</div>
+      <div class="ibtn" onclick="openFilters()">
+        <svg width="17" height="17" fill="none" stroke="#D4A843" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+      </div>
+    </div>
+    <div class="fpills" id="fpills">
+      <span class="pill pill-on" onclick="selPill(this)">All</span>
+      <span class="pill pill-off" onclick="selPill(this)">Partners</span>
+      <span class="pill pill-off" onclick="selPill(this)">Coaches</span>
+      <span class="pill pill-off" onclick="selPill(this)">Tourney</span>
+    </div>
+    <div class="deck-area">
+      <div class="deck-wrap" id="deckWrap"><div style="text-align:center;padding:40px 20px;color:var(--t2)"><div style="font-size:48px;margin-bottom:14px">🏓</div><div style="font-size:15px;font-weight:500;color:var(--t1);margin-bottom:6px">Loading players…</div></div></div>
+    </div>
+    <div class="swipe-btns">
+      <div class="sab sab-sm sab-rew" onclick="doRewind()"><svg width="20" height="20" fill="none" stroke="#7B68EE" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M3.51 15A9 9 0 102 12"/></svg></div>
+      <div class="sab sab-md sab-pass" onclick="doPass()"><svg width="24" height="24" fill="none" stroke="#FF4757" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+      <div class="sab sab-sm sab-sup" onclick="doSuper()"><svg width="20" height="20" fill="none" stroke="#D4A843" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+      <div class="sab sab-md sab-play" onclick="doPlay()"><svg width="24" height="24" fill="none" stroke="#2ED573" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+      <div class="sab sab-sm sab-boost" onclick="toast('Boost active — you\'re featured for 30 min ⚡')"><svg width="20" height="20" fill="none" stroke="#00D2D3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+    </div>
+    <!-- Match Modal -->
+    <div class="modal-bg" id="matchModal">
+      <div class="match-modal">
+        <div class="match-sparks">✦ ✦ ✦</div>
+        <div class="match-hl">It's a Match!</div>
+        <div class="match-sub" id="matchSub">You both want to play!</div>
+        <div class="match-avs">
+          <div class="match-av" id="matchAv1"></div>
+          <div class="match-vs">✦</div>
+          <div class="match-av" id="matchAv2"></div>
+        </div>
+        <button class="match-btn" onclick="closeMatch();go('messages')">Send a message</button>
+        <div class="match-skip" onclick="closeMatch()">Continue swiping</div>
+      </div>
+    </div>
+    <!-- Filters -->
+    <div class="overlay" id="fsheet">
+      <div class="hdr"><span style="font-family:var(--serif);font-size:20px;font-weight:500">Filters</span><div class="ibtn" onclick="closeFilters()"><svg width="14" height="14" fill="none" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+      <div class="scroll" style="padding:0 20px 20px">
+        <div style="margin-bottom:20px"><div style="font-size:10px;font-weight:600;color:var(--g2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Skill range (DUPR)</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:8px">Showing: <span id="duprTxt" style="color:var(--g1);font-family:var(--serif);font-weight:500">2.0 – 6.0</span></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:11px;color:var(--t3)">2.0</span><input type="range" min="20" max="60" value="20" step="5" style="flex:1;accent-color:var(--g2)" oninput="updDupr('lo',this.value)"><span style="font-size:11px;color:var(--t3)">6.0</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;color:var(--t3)">2.0</span><input type="range" min="20" max="60" value="60" step="5" style="flex:1;accent-color:var(--g2)" oninput="updDupr('hi',this.value)"><span style="font-size:11px;color:var(--t3)">6.0</span></div>
+        </div>
+        <div style="margin-bottom:20px"><div style="font-size:10px;font-weight:600;color:var(--g2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Distance</div>
+          <div style="display:flex;align-items:center;gap:10px"><input type="range" min="1" max="100" value="50" step="1" style="flex:1;accent-color:var(--g2)" oninput="document.getElementById('distTxt').textContent=this.value+' mi'"><span id="distTxt" style="font-family:var(--serif);font-size:14px;font-weight:500;color:var(--g1);min-width:50px;text-align:right">50 mi</span></div>
+        </div>
+        <div style="margin-bottom:20px"><div style="font-size:10px;font-weight:600;color:var(--g2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Play style</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px" id="fStylePills">
+            <span class="pill pill-on" onclick="togFP(this)">Any</span>
+            <span class="pill pill-off" onclick="togFP(this)">Dinker</span>
+            <span class="pill pill-off" onclick="togFP(this)">Banger</span>
+            <span class="pill pill-off" onclick="togFP(this)">All-court</span>
+            <span class="pill pill-off" onclick="togFP(this)">Social</span>
+          </div>
+        </div>
+        <div style="margin-bottom:24px"><div style="font-size:10px;font-weight:600;color:var(--g2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Gender</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <span class="pill pill-on" onclick="togFP(this)">Any</span>
+            <span class="pill pill-off" onclick="togFP(this)">Men</span>
+            <span class="pill pill-off" onclick="togFP(this)">Women</span>
+            <span class="pill pill-off" onclick="togFP(this)">Mixed</span>
+          </div>
+        </div>
+        <button class="gold-btn" onclick="closeFilters();loadMatchDeck()">Apply &amp; refresh deck</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MESSAGES ═══ -->
+  <div class="screen" id="s-messages">
+    <div class="hdr"><div class="hdr-title">Messages</div></div>
+    <div class="scroll">
+      <div class="sec-lbl">Matches</div>
+      <div id="matchQuickRow" style="display:flex;gap:14px;padding:0 20px 16px;overflow-x:auto"></div>
+      <div class="divl"></div>
+      <div class="sec-lbl" style="margin-top:12px">Conversations</div>
+      <div class="conv-list" id="convList"><div style="text-align:center;padding:40px 20px;color:var(--t2);font-size:13px">No conversations yet.<br>Match with players to start chatting!</div></div>
+    </div>
+    <div class="chat-view" id="chatView"></div>
+  </div>
+
+  <!-- ═══ MARKETPLACE ═══ -->
+  <div class="screen" id="s-market">
+    <div class="hdr"><div class="hdr-title">Shop</div>
+      <div class="ibtn" onclick="openListProduct()"><svg width="18" height="18" fill="none" stroke="#D4A843" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+    </div>
+    <div class="scroll">
+      <div class="mkt-srch"><svg width="15" height="15" fill="none" stroke="#504858" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input id="mktSearchInput" placeholder="Search paddles, coaching, courts…" oninput="filterProducts(this.value)"></div>
+      <div class="mkt-cats" id="mktCats">
+        <span class="pill pill-on" onclick="setMktCat(this,'all')">All</span>
+        <span class="pill pill-off" onclick="setMktCat(this,'paddle')">Paddles</span>
+        <span class="pill pill-off" onclick="setMktCat(this,'apparel')">Apparel</span>
+        <span class="pill pill-off" onclick="setMktCat(this,'court_booking')">Courts</span>
+        <span class="pill pill-off" onclick="setMktCat(this,'coaching')">Coaching</span>
+      </div>
+      <div class="mkt-grid" id="mktGrid"><div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--t2);font-size:13px">Loading listings…</div></div>
+    </div>
+    <div class="prod-sheet" id="prodSheet"></div>
+    <!-- List product overlay -->
+    <div class="overlay" id="listProductSheet">
+      <div class="hdr"><span style="font-family:var(--serif);font-size:20px;font-weight:500">List item</span><div class="ibtn" onclick="closeListProduct()"><svg width="14" height="14" fill="none" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+      <div class="scroll" style="padding:0 20px 20px">
+        <div class="field-wrap"><div class="field-label">Title</div><input class="field-input" id="lp-title" placeholder="e.g. Selkirk Vanguard Power Air"></div>
+        <div class="field-wrap"><div class="field-label">Category</div><select class="field-input" id="lp-cat"><option value="paddle">Paddle</option><option value="ball">Balls</option><option value="apparel">Apparel</option><option value="footwear">Footwear</option><option value="court_booking">Court booking</option><option value="coaching">Coaching session</option><option value="event_ticket">Event ticket</option><option value="other">Other</option></select></div>
+        <div class="field-wrap"><div class="field-label">Condition</div><select class="field-input" id="lp-cond"><option value="new">New</option><option value="like_new">Like new</option><option value="good">Good</option><option value="fair">Fair</option></select></div>
+        <div class="field-wrap"><div class="field-label">Price (USD)</div><input class="field-input" type="number" id="lp-price" placeholder="0.00" min="0" step="0.01"></div>
+        <div class="field-wrap"><div class="field-label">Description</div><textarea class="field-input" id="lp-desc" rows="3" placeholder="Describe your item…" style="resize:none"></textarea></div>
+        <button class="gold-btn" onclick="submitListing()">List for sale</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROFILE ═══ -->
+  <div class="screen" id="s-profile">
+    <div class="scroll" id="profileScroll">
+      <div id="profileContent"><div style="text-align:center;padding:48px;color:var(--t2);font-size:13px">Loading profile…</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ NOTIFICATIONS ═══ -->
+  <div class="screen" id="s-notifs">
+    <div class="hdr">
+      <div class="ibtn" onclick="go('feed')"><svg width="17" height="17" fill="none" stroke="#D4A843" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+      <div class="hdr-title" style="margin-left:12px;font-size:20px">Activity</div>
+    </div>
+    <div class="scroll"><div id="notifList"><div style="text-align:center;padding:40px;color:var(--t2);font-size:13px">No activity yet</div></div></div>
+  </div>
+
+  <!-- COMPOSE -->
+  <div class="compose" id="compose">
+    <div class="compose-hd">
+      <div class="ibtn" onclick="closeCompose()"><svg width="14" height="14" fill="none" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+      <div class="compose-hd-title">New post</div>
+      <button class="compose-post-btn" onclick="submitPost()">Post</button>
+    </div>
+    <div class="compose-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div class="av" style="width:42px;height:42px;background:var(--surf);font-size:18px" id="composeAv"></div>
+        <div style="font-size:14px;font-weight:500;color:var(--t1)" id="composeName">Loading…</div>
+      </div>
+      <textarea class="compose-ta" id="composeTA" placeholder="Share a match update, tip, or highlight…"></textarea>
+      <img id="composeMediaPreview" class="compose-media-preview">
+      <div style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;background:var(--card);border:1px solid var(--b2);font-size:12px;color:var(--t2);cursor:pointer">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="4"/></svg>
+          Photo
+          <input type="file" accept="image/*" style="display:none" onchange="previewComposeMedia(this)">
+        </label>
+        <div style="display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;background:var(--card);border:1px solid var(--b2);font-size:12px;color:var(--t2);cursor:pointer" onclick="toast('Location tagged!')">📍 Location</div>
+        <div style="display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;background:var(--card);border:1px solid var(--b2);font-size:12px;color:var(--t2);cursor:pointer" onclick="toast('Score attached!')">🏆 Score</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE OVERLAY -->
+  <div class="overlay" id="editProfileSheet">
+    <div class="hdr"><span style="font-family:var(--serif);font-size:20px;font-weight:500">Edit profile</span><div class="ibtn" onclick="closeEditProfile()"><svg width="14" height="14" fill="none" stroke="#D4A843" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+    <div class="scroll" style="padding:0 20px 20px">
+      <div class="ep-avatar" id="epAvatar">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="4"/></svg>
+        Change photo
+        <input type="file" id="epPhotoInput" accept="image/*" onchange="previewEPPhoto(this)">
+      </div>
+      <div class="field-wrap"><div class="field-label">Full name</div><input class="field-input" id="ep-name"></div>
+      <div class="field-wrap"><div class="field-label">Username</div><input class="field-input" id="ep-username"></div>
+      <div class="field-wrap"><div class="field-label">Bio</div><textarea class="field-input" id="ep-bio" rows="3" style="resize:none"></textarea></div>
+      <div class="field-wrap"><div class="field-label">City</div><input class="field-input" id="ep-city"></div>
+      <div class="field-wrap"><div class="field-label">DUPR Rating</div><input class="field-input" type="number" id="ep-dupr" step="0.1" min="1.0" max="7.0"></div>
+      <div class="field-wrap"><div class="field-label">Play style</div><select class="field-input" id="ep-style"><option value="dinker">Dinker</option><option value="banger">Banger</option><option value="all-court">All-court</option><option value="social">Social</option></select></div>
+      <div class="field-wrap"><div class="field-label">Paddle</div><input class="field-input" id="ep-paddle"></div>
+      <button class="gold-btn" onclick="saveProfile()" style="margin-bottom:12px">Save changes</button>
+      <button class="ghost-btn" onclick="doSignOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav" id="bnavBar">
+    <div class="bni on" id="bni-feed" onclick="go('feed')">
+      <svg width="22" height="22" fill="none" stroke="#D4A843" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <span class="bni-lbl" style="color:var(--g2)">Feed</span>
+    </div>
+    <div class="bni" id="bni-match" onclick="go('match')">
+      <svg width="22" height="22" fill="none" stroke="#282838" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <span class="bni-lbl">Match</span>
+    </div>
+    <div class="bni" onclick="openCompose()">
+      <div class="bni-add"><svg width="22" height="22" fill="none" stroke="#06060C" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+    </div>
+    <div class="bni" id="bni-market" onclick="go('market')">
+      <svg width="22" height="22" fill="none" stroke="#282838" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="bni-lbl">Shop</span>
+    </div>
+    <div class="bni" id="bni-profile" onclick="go('profile')">
+      <svg width="22" height="22" fill="none" stroke="#282838" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="bni-lbl">Me</span>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIGURATION — Replace with your Supabase project details
+//  Get these from: https://app.supabase.com → Settings → API
+// ══════════════════════════════════════════════════════════
+var SUPABASE_URL = 'https://wjteubirwxjqkqqorngp.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_XXF8PjrcuUvHjVDxKvOILA_NPCqbBEN';
+
+// ── INIT ──
+var sb = null;
+var currentUser = null;
+var currentProfile = null;
+var deckPlayers = [];
+var deckIdx = 0;
+var topCardEl = null;
+var isDrag = false, sx = 0, sy = 0, cx = 0, cy = 0;
+var likedPosts = {};
+var currentMatchId = null;
+var realtimeChannel = null;
+var mktCatFilter = 'all';
+var uploadedPhotoFile = null;
+var uploadedPostFile = null;
+var obStyle = '';
+var obAvail = [];
+
+function initSupabase() {
+  try {
+    if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      console.log('[DinkMate] Supabase connected to:', SUPABASE_URL);
+      return true;
+    } else {
+      console.error('[DinkMate] Supabase library not loaded');
+      return false;
+    }
+  } catch (e) {
+    console.error('[DinkMate] Supabase init error:', e);
+    return false;
+  }
+}
+
+// ── CLOCK ──
+function updateClock() {
+  var d = new Date(), h = d.getHours(), m = d.getMinutes();
+  document.getElementById('sbTime').textContent = (h % 12 || 12) + ':' + (m < 10 ? '0' : '') + m;
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+// ── TOAST ──
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(function() { el.classList.remove('show'); }, 2400);
+}
+
+// ── STARTUP ──
+window.addEventListener('load', async function() {
+  initSupabase();
+  await checkAuth();
+});
+
+async function checkAuth() {
+  if (!sb) {
+    // Demo mode — show demo content
+    setTimeout(function() {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'flex';
+    }, 1200);
+    return;
+  }
+  var { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadCurrentProfile();
+  } else {
+    setTimeout(function() {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'flex';
+    }, 1200);
+  }
+  // Auth state listener
+  sb.auth.onAuthStateChange(async function(event, session) {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      await loadCurrentProfile();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      currentProfile = null;
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'flex';
+    }
+  });
+}
+
+async function loadCurrentProfile() {
+  if (!sb || !currentUser) return;
+  var { data, error } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  if (error || !data) {
+    // New user — needs onboarding
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('onboard').classList.add('open');
+    return;
+  }
+  currentProfile = data;
+  document.getElementById('loader').style.display = 'none';
+  enterApp();
+}
+
+function enterApp() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('onboard').classList.remove('open');
+  document.getElementById('bnavBar').style.display = 'flex';
+  updateMyAvatar();
+  loadFeed();
+  loadMatchDeck();
+  loadMessages();
+  loadProducts();
+  renderProfile();
+  loadNotifications();
+}
+
+// ══════════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.getElementById('tab-signin').classList.toggle('on', tab === 'signin');
+  document.getElementById('tab-signup').classList.toggle('on', tab === 'signup');
+  document.getElementById('form-signin').style.display = tab === 'signin' ? 'block' : 'none';
+  document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('authErr').classList.remove('show');
+}
+
+function showAuthErr(msg) {
+  var el = document.getElementById('authErr');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function doSignIn() {
+  if (!sb) { showAuthErr('Configure Supabase first — see SETUP.md'); return; }
+  var email = document.getElementById('si-email').value.trim();
+  var pass = document.getElementById('si-pass').value;
+  if (!email || !pass) { showAuthErr('Please enter your email and password'); return; }
+  var btn = document.getElementById('signinBtn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  var { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Sign in';
+  if (error) { showAuthErr(error.message); return; }
+  document.getElementById('authErr').classList.remove('show');
+}
+
+async function doSignUp() {
+  if (!sb) { showAuthErr('Configure Supabase first — see SETUP.md'); return; }
+  var name = document.getElementById('su-name').value.trim();
+  var email = document.getElementById('su-email').value.trim();
+  var pass = document.getElementById('su-pass').value;
+  if (!name || !email || !pass) { showAuthErr('Please fill in all fields'); return; }
+  if (pass.length < 8) { showAuthErr('Password must be at least 8 characters'); return; }
+  var btn = document.getElementById('signupBtn');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  var { data, error } = await sb.auth.signUp({
+    email, password: pass,
+    options: { data: { full_name: name } }
+  });
+  btn.disabled = false; btn.textContent = 'Create account';
+  if (error) { showAuthErr(error.message); return; }
+  if (data.user && !data.session) {
+    showAuthErr('Check your email to confirm your account, then sign in.');
+    return;
+  }
+  document.getElementById('authErr').classList.remove('show');
+}
+
+async function doMagicLink() {
+  if (!sb) { toast('Configure Supabase first'); return; }
+  var email = document.getElementById('si-email').value.trim();
+  if (!email) { showAuthErr('Enter your email first'); return; }
+  var { error } = await sb.auth.signInWithOtp({ email });
+  if (error) { showAuthErr(error.message); return; }
+  toast('Magic link sent! Check your email 📧');
+}
+
+async function doForgotPassword() {
+  if (!sb) { toast('Configure Supabase first'); return; }
+  var email = document.getElementById('si-email').value.trim();
+  if (!email) { showAuthErr('Enter your email address above first'); return; }
+  var { error } = await sb.auth.resetPasswordForEmail(email);
+  if (error) { showAuthErr(error.message); return; }
+  toast('Reset link sent! Check your email 📧');
+}
+
+async function doSignOut() {
+  if (!sb) return;
+  closeEditProfile();
+  await sb.auth.signOut();
+  toast('Signed out');
+}
+
+// ══════════════════════════════════════════════════════════
+//  ONBOARDING
+// ══════════════════════════════════════════════════════════
+function previewPhoto(input) {
+  var file = input.files[0];
+  if (!file) return;
+  uploadedPhotoFile = file;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var wrap = document.getElementById('photoUpload');
+    var img = wrap.querySelector('img') || document.createElement('img');
+    img.src = e.target.result;
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%';
+    if (!wrap.querySelector('img')) wrap.appendChild(img);
+  };
+  reader.readAsDataURL(file);
+}
+
+function obNext(step) {
+  if (step === 1) {
+    var username = document.getElementById('ob-username').value.trim();
+    var age = document.getElementById('ob-age').value;
+    var city = document.getElementById('ob-city').value.trim();
+    if (!username) { toast('Please enter a username'); return; }
+    if (!age || age < 18) { toast('You must be 18 or older'); return; }
+  }
+  if (step === 2) {
+    var skill = document.getElementById('ob-skill').value;
+    if (!skill) { toast('Please select your skill level'); return; }
+  }
+  if (step === 3 && !obStyle) { toast('Please select your play style'); return; }
+  document.getElementById('ob-step-' + step).classList.remove('active');
+  document.getElementById('ob-bar-' + step).classList.add('done');
+  document.getElementById('ob-step-' + (step + 1)).classList.add('active');
+  document.getElementById('ob-bar-' + (step + 1)).classList.add('done');
+}
+
+function selStyle(el, val) {
+  document.querySelectorAll('.style-card').forEach(function(c) { c.classList.remove('sel'); });
+  el.classList.add('sel');
+  obStyle = val;
+}
+
+function togAvail(el, val) {
+  el.classList.toggle('sel');
+  var idx = obAvail.indexOf(val);
+  if (idx >= 0) obAvail.splice(idx, 1);
+  else obAvail.push(val);
+}
+
+async function obFinish() {
+  var btn = document.getElementById('obFinishBtn');
+  btn.disabled = true; btn.textContent = 'Setting up your profile…';
+  var username = document.getElementById('ob-username').value.trim().toLowerCase().replace(/\s+/g, '_');
+  var age = parseInt(document.getElementById('ob-age').value);
+  var city = document.getElementById('ob-city').value.trim();
+  var dupr = parseFloat(document.getElementById('ob-dupr').value) || null;
+  var skill = document.getElementById('ob-skill').value;
+  var gender = document.getElementById('ob-gender').value;
+  var bio = document.getElementById('ob-bio').value.trim();
+  var paddle = document.getElementById('ob-paddle').value.trim();
+  var avatarUrl = null;
+
+  // Upload avatar if provided
+  if (sb && uploadedPhotoFile && currentUser) {
+    var ext = uploadedPhotoFile.name.split('.').pop();
+    var path = 'avatars/' + currentUser.id + '.' + ext;
+    var { data: upData, error: upErr } = await sb.storage.from('avatars').upload(path, uploadedPhotoFile, { upsert: true });
+    if (!upErr) {
+      var { data: urlData } = sb.storage.from('avatars').getPublicUrl(path);
+      avatarUrl = urlData.publicUrl;
+    }
+  }
+
+  var profileData = {
+    id: currentUser ? currentUser.id : null,
+    username: username,
+    full_name: currentUser ? (currentUser.user_metadata?.full_name || username) : username,
+    age: age,
+    location_city: city,
+    dupr_rating: dupr,
+    skill_level: skill,
+    gender: gender || null,
+    play_style: obStyle || 'all-court',
+    availability: obAvail,
+    bio: bio || null,
+    paddle_brand: paddle || null,
+    avatar_url: avatarUrl,
+    subscription_tier: 'free'
+  };
+
+  if (sb && currentUser) {
+    var { error } = await sb.from('profiles').insert(profileData);
+    if (error) {
+      btn.disabled = false; btn.textContent = 'Start playing 🏓';
+      toast('Error: ' + error.message); return;
+    }
+    currentProfile = profileData;
+  } else {
+    // Demo mode — store in memory
+    currentProfile = { ...profileData, id: 'demo-' + Date.now() };
+  }
+  document.getElementById('onboard').classList.remove('open');
+  enterApp();
+}
+
+// ══════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════
+function go(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  var sc = document.getElementById('s-' + id);
+  if (sc) sc.classList.add('active');
+  document.querySelectorAll('.bni').forEach(function(b) {
+    b.classList.remove('on');
+    var svg = b.querySelector('svg'); if (svg) svg.setAttribute('stroke', '#282838');
+    var lbl = b.querySelector('.bni-lbl'); if (lbl) lbl.style.color = '#504858';
+  });
+  var bni = document.getElementById('bni-' + id);
+  if (bni) {
+    bni.classList.add('on');
+    var svg = bni.querySelector('svg'); if (svg) svg.setAttribute('stroke', '#D4A843');
+    var lbl = bni.querySelector('.bni-lbl'); if (lbl) lbl.style.color = '#D4A843';
+  }
+  var noNav = ['notifs'];
+  document.getElementById('bnavBar').style.display = noNav.includes(id) ? 'none' : 'flex';
+  if (id === 'profile') renderProfile();
+  if (id === 'messages') loadMessages();
+}
+
+// ══════════════════════════════════════════════════════════
+//  FEED
+// ══════════════════════════════════════════════════════════
+function updateMyAvatar() {
+  if (!currentProfile) return;
+  var av = document.getElementById('myStorySav');
+  if (currentProfile.avatar_url) {
+    av.innerHTML = '<img src="' + currentProfile.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+  } else {
+    av.textContent = '➕';
+  }
+  var ca = document.getElementById('composeAv');
+  if (ca) {
+    if (currentProfile.avatar_url) ca.innerHTML = '<img src="' + currentProfile.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    else ca.textContent = (currentProfile.full_name || 'U').charAt(0).toUpperCase();
+  }
+  var cn = document.getElementById('composeName');
+  if (cn) cn.textContent = currentProfile.full_name || currentProfile.username || 'You';
+}
+
+async function loadFeed() {
+  var fp = document.getElementById('feedPosts');
+  var sr = document.getElementById('storiesRow');
+  if (!sb) {
+    fp.innerHTML = buildDemoFeed();
+    buildDemoStories(sr);
+    return;
+  }
+  var { data: posts, error } = await sb.from('posts')
+    .select('*, profiles(id, username, full_name, avatar_url, is_verified)')
+    .eq('is_deleted', false)
+    .order('created_at', { ascending: false })
+    .limit(30);
+  if (error || !posts || posts.length === 0) {
+    fp.innerHTML = buildDemoFeed();
+    buildDemoStories(sr);
+    return;
+  }
+  fp.innerHTML = '';
+  posts.forEach(function(p, i) { fp.appendChild(buildPostEl(p, i)); });
+  await loadStories(sr);
+}
+
+async function loadStories(sr) {
+  if (!sb) return;
+  var { data } = await sb.from('profiles')
+    .select('id, username, full_name, avatar_url')
+    .neq('id', currentUser ? currentUser.id : '')
+    .limit(8);
+  if (!data) return;
+  data.forEach(function(p) {
+    var d = document.createElement('div');
+    d.className = 'story';
+    d.onclick = function() { toast('@' + p.username + '\'s story'); };
+    var avInner = p.avatar_url
+      ? '<img src="' + p.avatar_url + '">'
+      : (p.full_name || p.username || '?').charAt(0).toUpperCase();
+    d.innerHTML = '<div class="sring sring-live"><div class="sav">' + avInner + '</div></div>' +
+      '<span class="sname">' + (p.username || 'player') + '</span>';
+    sr.appendChild(d);
+  });
+}
+
+function buildPostEl(p, idx) {
+  var prof = p.profiles || {};
+  var name = prof.full_name || prof.username || 'DinkMate Player';
+  var handle = prof.username || 'player';
+  var avContent = prof.avatar_url
+    ? '<img src="' + prof.avatar_url + '" style="width:100%;height:100%;object-fit:cover">'
+    : name.charAt(0).toUpperCase();
+  var mediaContent = p.media_urls && p.media_urls.length > 0
+    ? '<img src="' + p.media_urls[0] + '" loading="lazy" style="width:100%;height:100%;object-fit:cover">'
+    : '<div class="pmedia-ph"><div style="font-size:48px">🏓</div><div style="font-size:13px;color:var(--t2);margin-top:4px">' + (p.location_name || '') + '</div></div>';
+  var timeAgo = getTimeAgo(p.created_at);
+
+  var d = document.createElement('div');
+  d.className = 'post';
+  d.innerHTML =
+    '<div class="post-hd">' +
+      '<div class="av" style="width:38px;height:38px;background:var(--surf);font-size:16px;font-weight:600;color:var(--g2)">' + avContent + '</div>' +
+      '<div style="flex:1"><div style="display:flex;align-items:center"><span class="pname">' + escHtml(name) + '</span>' +
+      (prof.is_verified ? '<span class="spon-tag">✓ Verified</span>' : '') + '</div>' +
+        '<div class="psub">@' + escHtml(handle) + (p.location_name ? ' · ' + escHtml(p.location_name) : '') + '</div></div>' +
+      '<div style="cursor:pointer;color:var(--t2);padding:4px;font-size:18px" onclick="toast(\'Post options\')">···</div>' +
+    '</div>' +
+    '<div class="pmedia" style="height:240px">' + mediaContent + '</div>' +
+    '<div class="pactions">' +
+      '<div class="pabtn" id="lb' + idx + '" onclick="toggleLike(this,' + idx + ',\'' + p.id + '\',' + (p.likes_count || 0) + ')">' +
+        '<svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' +
+        '<span id="lc' + idx + '">' + fmt(p.likes_count || 0) + '</span>' +
+      '</div>' +
+      '<div class="pabtn" onclick="toast(\'Comments coming soon\')">' +
+        '<svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>' +
+        '<span>' + fmt(p.comments_count || 0) + '</span>' +
+      '</div>' +
+      '<div class="pabtn" onclick="toast(\'Link copied!\')">' +
+        '<svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>' +
+      '</div>' +
+      '<div class="pabtn" style="margin-left:auto" onclick="toast(\'Saved!\')">' +
+        '<svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>' +
+      '</div>' +
+    '</div>' +
+    '<div class="plikes"><span id="pl' + idx + '">' + fmt(p.likes_count || 0) + ' likes</span></div>' +
+    (p.caption ? '<div class="pcap"><b>' + escHtml(handle) + '</b> ' + escHtml(p.caption) + '</div>' : '') +
+    (p.hashtags && p.hashtags.length ? '<div class="ptags">' + p.hashtags.map(function(h){return '#'+h}).join(' ') + '</div>' : '') +
+    '<div class="ptime">' + timeAgo + '</div>';
+  return d;
+}
+
+async function toggleLike(btn, idx, postId, baseCount) {
+  var on = likedPosts[postId];
+  likedPosts[postId] = !on;
+  btn.classList.toggle('liked', !on);
+  var newCount = on ? Math.max(0, baseCount) : baseCount + 1;
+  var lc = document.getElementById('lc' + idx);
+  var pl = document.getElementById('pl' + idx);
+  if (lc) lc.textContent = fmt(newCount);
+  if (pl) pl.textContent = fmt(newCount) + ' likes';
+  if (sb && currentUser && postId) {
+    if (!on) {
+      await sb.from('likes').insert({ user_id: currentUser.id, post_id: postId });
+    } else {
+      await sb.from('likes').delete().eq('user_id', currentUser.id).eq('post_id', postId);
+    }
+  }
+}
+
+function buildDemoFeed() {
+  var posts = [
+    {caption:"Just finished a 3-hour session at Chelsea courts. My backhand drop shot is finally clicking! 🏓", handle:"marcus_pb", name:"Marcus Johnson", likes:142, comments:23, time:"2h ago", tags:["#pickleball","#3rdshot"]},
+    {caption:"Found my dream paddle at a steal. Carbon fiber face, 16mm core — total game changer for kitchen play.", handle:"ashley_t", name:"Ashley Torres", likes:89, comments:15, time:"5h ago", tags:["#gear","#paddlelife"]},
+    {caption:"Tournament day! Nerves are real but the training is paying off. Wish me luck everyone! 🏆", handle:"coachben_pb", name:"Coach Ben Reyes", likes:304, comments:67, time:"1d ago", tags:["#tournament","#competitivepickleball"]},
+  ];
+  return posts.map(function(p, i) {
+    return '<div class="post">' +
+      '<div class="post-hd"><div class="av" style="width:38px;height:38px;background:var(--surf);font-size:15px;font-weight:600;color:var(--g2)">' + p.name.charAt(0) + '</div>' +
+      '<div style="flex:1"><div class="pname">' + p.name + '</div><div class="psub">@' + p.handle + '</div></div>' +
+      '<div style="cursor:pointer;color:var(--t2);padding:4px;font-size:18px">···</div></div>' +
+      '<div class="pmedia" style="height:200px"><div class="pmedia-ph"><div style="font-size:48px">🏓</div></div></div>' +
+      '<div class="pactions">' +
+      '<div class="pabtn" id="dlb' + i + '" onclick="demoLike(this,' + i + ',' + p.likes + ')">' +
+      '<svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' +
+      '<span id="dlc' + i + '">' + p.likes + '</span></div>' +
+      '<div class="pabtn"><svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span>' + p.comments + '</span></div>' +
+      '<div class="pabtn" style="margin-left:auto"><svg width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></div>' +
+      '</div>' +
+      '<div class="plikes">' + p.likes + ' likes</div>' +
+      '<div class="pcap"><b>' + p.handle + '</b> ' + p.caption + '</div>' +
+      '<div class="ptags">' + p.tags.join(' ') + '</div>' +
+      '<div class="ptime">' + p.time + '</div>' +
+    '</div>';
+  }).join('') + '<div style="text-align:center;padding:24px;color:var(--t3);font-size:12px;letter-spacing:.5px">Connect Supabase to see real posts from real players</div>';
+}
+
+var demoLiked = {};
+function demoLike(btn, idx, base) {
+  var on = demoLiked[idx];
+  demoLiked[idx] = !on;
+  btn.classList.toggle('liked', !on);
+  var lc = document.getElementById('dlc' + idx);
+  if (lc) lc.textContent = on ? base : base + 1;
+}
+
+function buildDemoStories(sr) {
+  var stories = [{name:'Marcus',em:'🎾'},{name:'Ashley',em:'⚡'},{name:'Coach Ben',em:'🎓'},{name:'Priya',em:'🌟'},{name:'Carlos',em:'🎯'}];
+  stories.forEach(function(s) {
+    var d = document.createElement('div');
+    d.className = 'story';
+    d.onclick = function() { toast(s.name + '\'s story'); };
+    d.innerHTML = '<div class="sring sring-live"><div class="sav">' + s.em + '</div></div><span class="sname">' + s.name + '</span>';
+    sr.appendChild(d);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  COMPOSE / POST
+// ══════════════════════════════════════════════════════════
+function openCompose() { document.getElementById('compose').classList.add('open'); }
+function closeCompose() { document.getElementById('compose').classList.remove('open'); }
+
+function previewComposeMedia(input) {
+  uploadedPostFile = input.files[0];
+  if (!uploadedPostFile) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var prev = document.getElementById('composeMediaPreview');
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+  };
+  reader.readAsDataURL(uploadedPostFile);
+}
+
+async function submitPost() {
+  var text = document.getElementById('composeTA').value.trim();
+  if (!text) { toast('Write something first'); return; }
+  if (!sb || !currentUser) {
+    toast('Post shared (demo mode) 🏓');
+    closeCompose();
+    document.getElementById('composeTA').value = '';
+    var prev = document.getElementById('composeMediaPreview');
+    prev.style.display = 'none'; prev.src = '';
+    return;
+  }
+  var btn = document.querySelector('.compose-post-btn');
+  btn.disabled = true; btn.textContent = 'Posting…';
+  var mediaUrl = null;
+  if (uploadedPostFile) {
+    var ext = uploadedPostFile.name.split('.').pop();
+    var path = 'posts/' + currentUser.id + '/' + Date.now() + '.' + ext;
+    var { data: upData } = await sb.storage.from('posts').upload(path, uploadedPostFile);
+    if (upData) {
+      var { data: urlData } = sb.storage.from('posts').getPublicUrl(path);
+      mediaUrl = urlData.publicUrl;
+    }
+  }
+  var hashtags = (text.match(/#\w+/g) || []).map(function(h) { return h.slice(1); });
+  var { error } = await sb.from('posts').insert({
+    user_id: currentUser.id,
+    type: 'post',
+    caption: text.replace(/#\w+/g, '').trim(),
+    media_urls: mediaUrl ? [mediaUrl] : [],
+    hashtags: hashtags
+  });
+  btn.disabled = false; btn.textContent = 'Post';
+  if (error) { toast('Error posting: ' + error.message); return; }
+  toast('Posted! 🏓');
+  closeCompose();
+  document.getElementById('composeTA').value = '';
+  uploadedPostFile = null;
+  var prev = document.getElementById('composeMediaPreview');
+  prev.style.display = 'none'; prev.src = '';
+  loadFeed();
+}
+
+// ══════════════════════════════════════════════════════════
+//  MATCHING
+// ══════════════════════════════════════════════════════════
+async function loadMatchDeck() {
+  var wrap = document.getElementById('deckWrap');
+  wrap.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--t2)"><div style="font-size:36px;margin-bottom:10px">🔍</div><div style="font-size:14px;color:var(--t1)">Finding players…</div></div>';
+  deckPlayers = [];
+  deckIdx = 0;
+  topCardEl = null;
+
+  if (!sb || !currentUser) {
+    deckPlayers = getDemoPlayers();
+    renderDeck();
+    return;
+  }
+
+  // Get already-swiped IDs
+  var { data: swiped } = await sb.from('swipes').select('target_id').eq('swiper_id', currentUser.id);
+  var swipedIds = (swiped || []).map(function(s) { return s.target_id; });
+  swipedIds.push(currentUser.id); // exclude self
+
+  var q = sb.from('profiles').select('*').not('id', 'in', '(' + (swipedIds.length ? swipedIds.join(',') : '00000000-0000-0000-0000-000000000000') + ')').limit(20);
+
+  var { data: players } = await q;
+  if (!players || players.length === 0) {
+    deckPlayers = getDemoPlayers();
+  } else {
+    deckPlayers = players;
+  }
+  renderDeck();
+}
+
+function getDemoPlayers() {
+  return [
+    {id:'d1',full_name:'Sarah K.',username:'sarah_pb',age:28,location_city:'West Village, NYC',dupr_rating:4.2,play_style:'dinker',availability:['weekends'],bio:"Left-handed kitchen queen. Looking for a doubles partner for Sunday mornings.",avatar_url:null},
+    {id:'d2',full_name:'Marcus J.',username:'marcus_pb',age:33,location_city:'Midtown, NYC',dupr_rating:4.5,play_style:'all-court',availability:['weekday_pm'],bio:'Teaching pro. Looking for high-intensity practice partners.',avatar_url:null,is_verified:true},
+    {id:'d3',full_name:'Priya M.',username:'priya_pb',age:30,location_city:'Brooklyn, NYC',dupr_rating:4.0,play_style:'banger',availability:['any'],bio:'Competitive spirit, loves a hard rally. New to NYC — need court buddies!',avatar_url:null},
+    {id:'d4',full_name:'Ashley T.',username:'ashley_t',age:35,location_city:'UWS, NYC',dupr_rating:4.8,play_style:'all-court',availability:['weekday_am'],bio:'Former tennis D1. Converted 2 years ago, never looked back.',avatar_url:null,is_verified:true},
+    {id:'d5',full_name:'Carlos R.',username:'carlos_pb',age:29,location_city:'Hoboken, NJ',dupr_rating:3.8,play_style:'social',availability:['weekends'],bio:'Weekend warrior. Post-game brunch non-negotiable.',avatar_url:null},
+  ];
+}
+
+function renderDeck() {
+  var wrap = document.getElementById('deckWrap');
+  wrap.innerHTML = '';
+  topCardEl = null;
+  if (deckIdx >= deckPlayers.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--t2)"><div style="font-size:48px;margin-bottom:14px">🏓</div><div style="font-size:16px;font-weight:500;color:var(--t1);margin-bottom:6px">All caught up!</div><div style="font-size:13px">Expand filters or check back later</div></div>';
+    return;
+  }
+  // Shadow card
+  if (deckIdx + 1 < deckPlayers.length) {
+    var sh = document.createElement('div');
+    sh.className = 'pcard-shadow';
+    wrap.appendChild(sh);
+  }
+  var p = deckPlayers[deckIdx];
+  var card = buildPlayerCard(p);
+  card.style.zIndex = '2';
+  wrap.appendChild(card);
+  topCardEl = card;
+  attachDrag(card, p);
+}
+
+function buildPlayerCard(p) {
+  var avContent = p.avatar_url
+    ? '<img src="' + p.avatar_url + '">'
+    : (p.full_name || 'P').charAt(0).toUpperCase();
+  var tags = [];
+  if (p.dupr_rating) tags.push({t: p.dupr_rating.toFixed(1) + ' DUPR', c: 'tg'});
+  if (p.play_style) tags.push({t: cap(p.play_style), c: 'tb'});
+  if (p.availability && p.availability.length) tags.push({t: fmtAvail(p.availability[0]), c: 'tn'});
+  var tagsHtml = tags.map(function(t) { return '<span class="tag ' + t.c + '">' + t.t + '</span>'; }).join('');
+
+  var d = document.createElement('div');
+  d.className = 'pcard';
+  d.innerHTML =
+    '<div class="cphoto">' +
+      '<div class="cphoto-inner">' +
+        '<div class="cphoto-av">' + avContent + '</div>' +
+        '<div class="csub-tag">' + cap(p.play_style || 'player') + '</div>' +
+      '</div>' +
+      '<div class="cfade"></div>' +
+      '<div class="chint chint-play" id="hp">PLAY</div>' +
+      '<div class="chint chint-pass" id="hpass">PASS</div>' +
+    '</div>' +
+    '<div class="cbody">' +
+      '<div class="cname-row">' +
+        '<span class="cname">' + escHtml(p.full_name || p.username) + '</span>' +
+        (p.age ? '<span class="cage">' + p.age + '</span>' : '') +
+        (p.is_verified ? '<div class="vdot">✓</div>' : '') +
+      '</div>' +
+      '<div class="cloc"><div class="olive"></div>' + escHtml(p.location_city || 'Nearby') + '</div>' +
+      '<div class="ctags">' + tagsHtml + '</div>' +
+      (p.bio ? '<div class="cbio">' + escHtml(p.bio) + '</div>' : '') +
+      '<div class="cstats">' +
+        '<div class="cstat"><div class="cstat-v">' + (p.dupr_rating ? p.dupr_rating.toFixed(1) : '—') + '</div><div class="cstat-l">DUPR</div></div>' +
+        '<div class="cstat"><div class="cstat-v">' + cap(p.play_style || '—') + '</div><div class="cstat-l">Style</div></div>' +
+        '<div class="cstat"><div class="cstat-v">' + cap(p.skill_level || '—') + '</div><div class="cstat-l">Level</div></div>' +
+      '</div>' +
+    '</div>';
+  return d;
+}
+
+function attachDrag(card, player) {
+  card.addEventListener('mousedown', onStart);
+  card.addEventListener('touchstart', onStart, {passive: true});
+  function onStart(e) {
+    isDrag = true; cx = 0; cy = 0;
+    sx = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+    sy = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+    card.style.transition = 'none';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchmove', onMove, {passive: false});
+    document.addEventListener('touchend', onEnd);
+  }
+  function onMove(e) {
+    if (!isDrag) return;
+    if (e.cancelable) e.preventDefault();
+    var ex = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    var ey = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+    cx = ex - sx; cy = ey - sy;
+    card.style.transform = 'translate(' + cx + 'px,' + cy + 'px) rotate(' + (cx * 0.065) + 'deg)';
+    var hp = document.getElementById('hp');
+    var hpass = document.getElementById('hpass');
+    if (hp) hp.style.opacity = String(Math.max(0, Math.min(cx / 60, 1)));
+    if (hpass) hpass.style.opacity = String(Math.max(0, Math.min(-cx / 60, 1)));
+  }
+  function onEnd() {
+    if (!isDrag) return;
+    isDrag = false;
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onEnd);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onEnd);
+    if (cx > 90) { animCard(card, 'r'); recordSwipe(player, 'right'); }
+    else if (cx < -90) { animCard(card, 'l'); recordSwipe(player, 'left'); }
+    else {
+      card.style.transition = 'transform .35s cubic-bezier(.34,1.56,.64,1)';
+      card.style.transform = 'none';
+      var hp = document.getElementById('hp'); if (hp) hp.style.opacity = '0';
+      var hpass = document.getElementById('hpass'); if (hpass) hpass.style.opacity = '0';
+    }
+  }
+}
+
+function animCard(card, dir) {
+  card.style.transition = 'transform .38s cubic-bezier(.4,0,.2,1), opacity .38s';
+  card.style.transform = 'translate(' + (dir === 'r' ? '520px' : '-520px') + ',-30px) rotate(' + (dir === 'r' ? 22 : -22) + 'deg)';
+  card.style.opacity = '0';
+  setTimeout(function() { deckIdx++; renderDeck(); }, 370);
+}
+
+async function recordSwipe(player, dir) {
+  if (!sb || !currentUser) {
+    if (dir === 'right' && Math.random() > 0.4) triggerMatch(player);
+    return;
+  }
+  var { data, error } = await sb.from('swipes').insert({
+    swiper_id: currentUser.id,
+    target_id: player.id,
+    direction: dir,
+    is_super: dir === 'super'
+  }).select().single();
+  if (error) return;
+  if (dir !== 'left') {
+    // Check if match was auto-created by trigger
+    var u1 = currentUser.id < player.id ? currentUser.id : player.id;
+    var u2 = currentUser.id < player.id ? player.id : currentUser.id;
+    var { data: match } = await sb.from('matches').select('id').eq('user1_id', u1).eq('user2_id', u2).single();
+    if (match) triggerMatch(player, match.id);
+  }
+}
+
+function triggerMatch(player, matchId) {
+  var av1 = document.getElementById('matchAv1');
+  var av2 = document.getElementById('matchAv2');
+  if (currentProfile && currentProfile.avatar_url) {
+    av1.innerHTML = '<img src="' + currentProfile.avatar_url + '" style="width:100%;height:100%;object-fit:cover">';
+  } else {
+    av1.textContent = (currentProfile ? currentProfile.full_name || 'Y' : 'Y').charAt(0);
+  }
+  if (player.avatar_url) {
+    av2.innerHTML = '<img src="' + player.avatar_url + '" style="width:100%;height:100%;object-fit:cover">';
+  } else {
+    av2.textContent = (player.full_name || 'P').charAt(0);
+  }
+  document.getElementById('matchSub').textContent = 'You and ' + (player.full_name || player.username || 'this player') + ' both want to play!';
+  currentMatchId = matchId || null;
+  document.getElementById('matchModal').classList.add('open');
+  if (sb && currentUser && player.id) {
+    sb.from('notifications').insert({
+      user_id: player.id, type: 'match',
+      title: 'New match!',
+      body: (currentProfile ? currentProfile.full_name || 'Someone' : 'Someone') + ' wants to play with you!',
+      actor_id: currentUser.id
+    });
+  }
+}
+
+function closeMatch() { document.getElementById('matchModal').classList.remove('open'); }
+function doPass() { if (topCardEl) { animCard(topCardEl, 'l'); recordSwipe(deckPlayers[deckIdx], 'left'); } }
+function doPlay() { if (topCardEl) { animCard(topCardEl, 'r'); recordSwipe(deckPlayers[deckIdx], 'right'); } }
+function doSuper() {
+  if (topCardEl) {
+    topCardEl.style.transition = 'transform .38s cubic-bezier(.4,0,.2,1), opacity .38s';
+    topCardEl.style.transform = 'translateY(-600px) scale(1.06)';
+    topCardEl.style.opacity = '0';
+    var p = deckPlayers[deckIdx];
+    setTimeout(function() { deckIdx++; renderDeck(); triggerMatch(p); }, 370);
+    if (sb && currentUser) {
+      sb.from('swipes').insert({ swiper_id: currentUser.id, target_id: p.id, direction: 'super', is_super: true });
+    }
+  }
+}
+function doRewind() {
+  if (deckIdx > 0) { deckIdx--; renderDeck(); toast('Rewound ↩'); }
+}
+function openFilters() { document.getElementById('fsheet').classList.add('open'); }
+function closeFilters() { document.getElementById('fsheet').classList.remove('open'); }
+function togFP(el) {
+  var pills = el.parentElement.querySelectorAll('.pill');
+  pills.forEach(function(p) { p.className = 'pill pill-off'; });
+  el.className = 'pill pill-on';
+}
+function selPill(el) {
+  document.querySelectorAll('#fpills .pill').forEach(function(p) { p.className = 'pill pill-off'; });
+  el.className = 'pill pill-on';
+}
+var duprLo = 20, duprHi = 60;
+function updDupr(t, v) {
+  if (t === 'lo') duprLo = parseInt(v); else duprHi = parseInt(v);
+  document.getElementById('duprTxt').textContent = (duprLo/10).toFixed(1) + ' – ' + (duprHi/10).toFixed(1);
+}
+
+// ══════════════════════════════════════════════════════════
+//  MESSAGES
+// ══════════════════════════════════════════════════════════
+async function loadMessages() {
+  var matchRow = document.getElementById('matchQuickRow');
+  var convList = document.getElementById('convList');
+  if (!sb || !currentUser) {
+    matchRow.innerHTML = '';
+    convList.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--t2);font-size:13px">Sign in to see your matches and messages</div>';
+    return;
+  }
+  var uid = currentUser.id;
+  var { data: matches } = await sb.from('matches').select('*, user1:profiles!matches_user1_id_fkey(id,full_name,username,avatar_url), user2:profiles!matches_user2_id_fkey(id,full_name,username,avatar_url)').or('user1_id.eq.' + uid + ',user2_id.eq.' + uid).eq('status','active').order('last_message_at', {ascending: false, nullsFirst: false}).limit(20);
+
+  if (!matches || matches.length === 0) {
+    matchRow.innerHTML = '';
+    convList.innerHTML = '<div style="text-align:center;padding:32px 20px;color:var(--t2);font-size:13px">No matches yet. Swipe to find players!</div>';
+    return;
+  }
+
+  // Quick match row (avatars)
+  matchRow.innerHTML = '';
+  matches.slice(0,6).forEach(function(m) {
+    var other = m.user1_id === uid ? m.user2 : m.user1;
+    if (!other) return;
+    var d = document.createElement('div');
+    d.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0';
+    d.onclick = function() { openChat(m, other); };
+    var av = other.avatar_url ? '<img src="' + other.avatar_url + '">' : (other.full_name || '?').charAt(0);
+    d.innerHTML = '<div style="width:56px;height:56px;border-radius:50%;padding:2px;background:conic-gradient(from 0deg,#F5D98A,#D4A843,#7B68EE,#F5D98A)"><div class="sav" style="font-size:20px;font-weight:600;color:var(--g2)">' + av + '</div></div>' +
+      '<div style="font-size:10px;color:var(--t2);text-align:center;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(other.full_name || other.username || 'Player') + '</div>';
+    matchRow.appendChild(d);
+  });
+
+  // Conversation list
+  convList.innerHTML = '';
+  for (var i = 0; i < matches.length; i++) {
+    var m = matches[i];
+    var other = m.user1_id === uid ? m.user2 : m.user1;
+    if (!other) continue;
+    // Get last message
+    var { data: lastMsgs } = await sb.from('messages').select('content,created_at,sender_id').eq('match_id', m.id).order('created_at',{ascending:false}).limit(1);
+    var lastMsg = lastMsgs && lastMsgs.length ? lastMsgs[0] : null;
+    var d = document.createElement('div');
+    d.className = 'conv-item';
+    d.onclick = (function(match, otherPlayer) { return function() { openChat(match, otherPlayer); }; })(m, other);
+    var av = other.avatar_url ? '<img src="' + other.avatar_url + '">' : (other.full_name || '?').charAt(0);
+    d.innerHTML =
+      '<div class="conv-av-wrap"><div class="av" style="width:50px;height:50px;background:var(--surf);font-size:20px;font-weight:600;color:var(--g2)">' + av + '</div></div>' +
+      '<div class="conv-info"><div class="conv-name">' + escHtml(other.full_name || other.username || 'Player') + '</div>' +
+      '<div class="conv-prev">' + (lastMsg ? escHtml(lastMsg.content || 'Matched!') : 'Tap to say hi! 🏓') + '</div></div>' +
+      '<div class="conv-meta"><div class="conv-time">' + (lastMsg ? getTimeAgo(lastMsg.created_at) : getTimeAgo(m.created_at)) + '</div></div>';
+    convList.appendChild(d);
+  }
+}
+
+function openChat(match, otherPlayer) {
+  var cv = document.getElementById('chatView');
+  var av = otherPlayer.avatar_url ? '<img src="' + otherPlayer.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : (otherPlayer.full_name || '?').charAt(0);
+
+  cv.innerHTML =
+    '<div class="chat-hd">' +
+      '<div class="ibtn" onclick="document.getElementById(\'chatView\').classList.remove(\'open\');loadMessages()"><svg width="17" height="17" fill="none" stroke="#D4A843" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>' +
+      '<div class="av" style="width:40px;height:40px;background:var(--surf);font-size:18px;font-weight:600;color:var(--g2);margin-left:8px">' + av + '</div>' +
+      '<div style="flex:1;margin-left:10px"><div class="chat-name">' + escHtml(otherPlayer.full_name || otherPlayer.username || 'Player') + '</div>' +
+        '<div class="chat-status">DinkMate match ✦</div></div>' +
+      '<div class="ibtn" onclick="toast(\'Schedule a game\')"><svg width="17" height="17" fill="none" stroke="#D4A843" stroke-width="1.8" stroke-linecap="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>' +
+    '</div>' +
+    '<div class="chat-msgs" id="chatMsgsArea"><div class="msg-time">Loading messages…</div></div>' +
+    '<div class="chat-inp-row">' +
+      '<input class="chat-inp" id="chatInput" placeholder="Message ' + escHtml((otherPlayer.full_name || 'them').split(' ')[0]) + '…" onkeydown="if(event.key===\'Enter\')sendMsg(\'' + match.id + '\',\'' + (otherPlayer.id) + '\')">' +
+      '<button class="chat-send" onclick="sendMsg(\'' + match.id + '\',\'' + otherPlayer.id + '\')">' +
+        '<svg width="16" height="16" fill="none" stroke="#06060C" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
+      '</button>' +
+    '</div>';
+  cv.classList.add('open');
+  loadChatMessages(match.id);
+  subscribeToMessages(match.id);
+}
+
+async function loadChatMessages(matchId) {
+  var area = document.getElementById('chatMsgsArea');
+  if (!area) return;
+  if (!sb) {
+    area.innerHTML = '<div class="msg-time">Today</div><div class="msg msg-in">Hey! Great to match with you 🏓</div>';
+    return;
+  }
+  var { data: msgs } = await sb.from('messages').select('*').eq('match_id', matchId).eq('is_deleted', false).order('created_at', {ascending: true}).limit(50);
+  area.innerHTML = '<div class="msg-time">Today</div>';
+  if (!msgs || msgs.length === 0) {
+    area.innerHTML += '<div style="text-align:center;padding:20px;color:var(--t2);font-size:13px">Say hello! You matched 🏓</div>';
+  } else {
+    msgs.forEach(function(m) {
+      var isMe = currentUser && m.sender_id === currentUser.id;
+      area.innerHTML += '<div class="msg ' + (isMe ? 'msg-out' : 'msg-in') + '">' + escHtml(m.content) + '</div>';
+    });
+  }
+  area.scrollTop = area.scrollHeight;
+}
+
+function subscribeToMessages(matchId) {
+  if (!sb) return;
+  if (realtimeChannel) sb.removeChannel(realtimeChannel);
+  realtimeChannel = sb.channel('match_' + matchId)
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'messages', filter:'match_id=eq.'+matchId}, function(payload) {
+      var area = document.getElementById('chatMsgsArea');
+      if (!area) return;
+      var isMe = currentUser && payload.new.sender_id === currentUser.id;
+      var div = document.createElement('div');
+      div.className = 'msg ' + (isMe ? 'msg-out' : 'msg-in');
+      div.textContent = payload.new.content;
+      area.appendChild(div);
+      area.scrollTop = area.scrollHeight;
+    }).subscribe();
+}
+
+async function sendMsg(matchId, recipientId) {
+  var inp = document.getElementById('chatInput');
+  if (!inp || !inp.value.trim()) return;
+  var text = inp.value.trim();
+  inp.value = '';
+  // Optimistic UI
+  var area = document.getElementById('chatMsgsArea');
+  if (area) {
+    var div = document.createElement('div');
+    div.className = 'msg msg-out';
+    div.textContent = text;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+  }
+  if (!sb || !currentUser) return;
+  await sb.from('messages').insert({ match_id: matchId, sender_id: currentUser.id, content: text });
+  await sb.from('matches').update({ last_message_at: new Date().toISOString() }).eq('id', matchId);
+  await sb.from('notifications').insert({ user_id: recipientId, type: 'message', title: 'New message', body: (currentProfile ? currentProfile.full_name || 'Someone' : 'Someone') + ': ' + text.slice(0, 60), actor_id: currentUser.id });
+}
+
+// ══════════════════════════════════════════════════════════
+//  MARKETPLACE
+// ══════════════════════════════════════════════════════════
+var allProducts = [];
+async function loadProducts() {
+  if (!sb) { allProducts = getDemoProducts(); renderProducts(allProducts); return; }
+  var { data } = await sb.from('products').select('*, seller:profiles(username,full_name,avatar_url,is_verified)').eq('is_available', true).eq('is_deleted', false).order('created_at', {ascending: false}).limit(40);
+  allProducts = (data && data.length) ? data : getDemoProducts();
+  renderProducts(allProducts);
+}
+
+function getDemoProducts() {
+  return [
+    {id:'p1',title:'Selkirk Vanguard Power Air',category:'paddle',condition:'new',price:229,original_price:249,seller:{username:'selkirk_official',full_name:'Selkirk Sport'},description:'Carbon fiber face, 16mm core. The paddle used by top pros.'},
+    {id:'p2',title:'Joola Hyperion CFS 16mm',category:'paddle',condition:'used',price:89,original_price:180,seller:{username:'pb_trader',full_name:'PB Trader NYC'},description:'Lightly used (8/10). Carbon friction surface.'},
+    {id:'p3',title:'DinkMate Elite Tee',category:'apparel',condition:'new',price:54,seller:{username:'dinkmate',full_name:'Official DinkMate'},description:'Moisture-wicking performance fabric. Sizes XS–3XL.'},
+    {id:'p4',title:'Chelsea Courts — 1hr Session',category:'court_booking',condition:'book',price:35,seller:{username:'chelsea_rec',full_name:'Chelsea Rec Center'},description:'Indoor court, climate controlled. Rackets available.'},
+    {id:'p5',title:'Private Lesson — Coach Ben',category:'coaching',condition:'book',price:120,seller:{username:'coach_ben',full_name:'Coach Ben Reyes'},description:'60-min PPR certified coaching. All skill levels.'},
+    {id:'p6',title:'Engage Pursuit EX Pro',category:'paddle',condition:'new',price:195,original_price:219,seller:{username:'engage_pb',full_name:'Engage Pickleball'},description:'16mm polypropylene core, raw carbon face.'},
+  ];
+}
+
+function renderProducts(products) {
+  var grid = document.getElementById('mktGrid');
+  var filtered = mktCatFilter === 'all' ? products : products.filter(function(p) { return p.category === mktCatFilter; });
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--t2);font-size:13px">No listings in this category yet.<br>Be the first to list something!</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  filtered.forEach(function(p, i) {
+    var d = document.createElement('div');
+    d.className = 'mkt-card';
+    d.onclick = function() { openProd(p); };
+    var condClass = p.condition === 'new' ? 'cn' : (p.condition === 'used' ? 'cu' : 'cb');
+    var condLabel = p.condition === 'book' ? 'BOOK' : p.condition === 'new' ? 'NEW' : 'USED';
+    d.innerHTML =
+      '<div class="mkt-img"><span style="font-size:44px">' + getCatEmoji(p.category) + '</span></div>' +
+      '<div class="mkt-body">' +
+        '<div class="mkt-cond ' + condClass + '">' + condLabel + '</div>' +
+        '<div class="mkt-name">' + escHtml(p.title) + '</div>' +
+        '<div class="mkt-price">$' + p.price + (p.original_price ? '<span style="font-size:11px;color:var(--t3);text-decoration:line-through;margin-left:4px">$' + p.original_price + '</span>' : '') + '</div>' +
+        '<div class="mkt-seller">' + escHtml((p.seller && p.seller.full_name) || (p.seller && p.seller.username) || 'Seller') + '</div>' +
+      '</div>';
+    grid.appendChild(d);
+  });
+}
+
+function getCatEmoji(cat) {
+  var map = {paddle:'🏓',ball:'⚪',apparel:'👕',footwear:'👟',court_booking:'📍',coaching:'🎓',event_ticket:'🎟',experience:'✈️',other:'📦'};
+  return map[cat] || '📦';
+}
+
+function setMktCat(el, cat) {
+  document.querySelectorAll('#mktCats .pill').forEach(function(p) { p.className = 'pill pill-off'; });
+  el.className = 'pill pill-on';
+  mktCatFilter = cat;
+  var search = document.getElementById('mktSearchInput').value;
+  filterProducts(search);
+}
+
+function filterProducts(query) {
+  var filtered = allProducts.filter(function(p) {
+    var catMatch = mktCatFilter === 'all' || p.category === mktCatFilter;
+    var textMatch = !query || p.title.toLowerCase().includes(query.toLowerCase()) || (p.description && p.description.toLowerCase().includes(query.toLowerCase()));
+    return catMatch && textMatch;
+  });
+  renderProducts(filtered);
+}
+
+function openProd(p) {
+  var sheet = document.getElementById('prodSheet');
+  sheet.innerHTML =
+    '<div class="prod-img"><span style="font-size:90px">' + getCatEmoji(p.category) + '</span>' +
+      '<div class="ibtn" style="position:absolute;top:14px;left:14px" onclick="document.getElementById(\'prodSheet\').classList.remove(\'open\')"><svg width="17" height="17" fill="none" stroke="#D4A843" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>' +
+    '</div>' +
+    '<div class="prod-body">' +
+      '<div style="font-size:9px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">' + (p.condition || 'available').toUpperCase() + '</div>' +
+      '<div style="font-family:var(--serif);font-size:20px;font-weight:500;color:var(--t1);margin-bottom:10px">' + escHtml(p.title) + '</div>' +
+      '<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:16px">' +
+        '<div style="font-family:var(--serif);font-size:28px;font-weight:600;color:var(--g1)">$' + p.price + '</div>' +
+        (p.original_price ? '<div style="font-size:16px;color:var(--t3);text-decoration:line-through">$' + p.original_price + '</div><div style="font-size:12px;color:var(--play);font-weight:500">Save $' + (p.original_price - p.price) + '</div>' : '') +
+      '</div>' +
+      '<div style="height:1px;background:var(--b2);margin-bottom:14px"></div>' +
+      '<div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:16px">' + escHtml(p.description || 'No description provided.') + '</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--card);border-radius:12px;margin-bottom:16px;border:1px solid var(--b2)">' +
+        '<div style="font-size:24px">' + (p.seller && p.seller.avatar_url ? '<img src="' + p.seller.avatar_url + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">' : '👤') + '</div>' +
+        '<div><div style="font-size:13px;font-weight:500;color:var(--t1)">' + escHtml((p.seller && p.seller.full_name) || 'Seller') + '</div><div style="font-size:11px;color:var(--t2)">DinkMate verified seller</div></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="prod-acts">' +
+      '<button class="prod-save" onclick="toast(\'Saved to wishlist ♡\')">♡ Save</button>' +
+      '<button class="prod-buy" onclick="toast(\'Opening checkout…\')">' + (p.condition === 'book' ? 'Book now' : 'Add to cart') + '</button>' +
+    '</div>';
+  sheet.classList.add('open');
+}
+
+function openListProduct() { document.getElementById('listProductSheet').classList.add('open'); }
+function closeListProduct() { document.getElementById('listProductSheet').classList.remove('open'); }
+
+async function submitListing() {
+  var title = document.getElementById('lp-title').value.trim();
+  var cat = document.getElementById('lp-cat').value;
+  var cond = document.getElementById('lp-cond').value;
+  var price = parseFloat(document.getElementById('lp-price').value);
+  var desc = document.getElementById('lp-desc').value.trim();
+  if (!title || !price || price <= 0) { toast('Fill in title and price'); return; }
+  if (!sb || !currentUser) {
+    toast('Item listed (demo mode)! 🎉');
+    closeListProduct();
+    return;
+  }
+  var { error } = await sb.from('products').insert({
+    seller_id: currentUser.id, title, category: cat,
+    condition: cond, price, description: desc, is_available: true
+  });
+  if (error) { toast('Error: ' + error.message); return; }
+  toast('Listed successfully! 🎉');
+  closeListProduct();
+  loadProducts();
+}
+
+// ══════════════════════════════════════════════════════════
+//  PROFILE
+// ══════════════════════════════════════════════════════════
+async function renderProfile(userId) {
+  var content = document.getElementById('profileContent');
+  var prof = userId ? null : currentProfile;
+  if (userId && sb) {
+    var { data } = await sb.from('profiles').select('*').eq('id', userId).single();
+    prof = data;
+  }
+  if (!prof) {
+    content.innerHTML = '<div style="text-align:center;padding:48px;color:var(--t2)">Profile not found</div>';
+    return;
+  }
+
+  // Get post count
+  var postCount = prof.total_posts || 0;
+  if (sb) {
+    var { count } = await sb.from('posts').select('id', {count:'exact',head:true}).eq('user_id', prof.id).eq('is_deleted',false);
+    postCount = count || 0;
+  }
+
+  var avContent = prof.avatar_url
+    ? '<img src="' + prof.avatar_url + '">'
+    : (prof.full_name || 'U').charAt(0).toUpperCase();
+  var isOwnProfile = !userId || (currentUser && userId === currentUser.id);
+
+  content.innerHTML =
+    '<div class="prof-cover">' +
+      '<div style="font-size:48px">🏓</div>' +
+      '<div class="prof-av-wrap"><div class="prof-av">' + avContent + '</div></div>' +
+      (isOwnProfile ? '<button class="prof-edit" style="position:absolute;bottom:-36px;right:20px;padding:8px 18px;border-radius:12px;background:var(--card);border:1px solid var(--b1);font-size:13px;font-weight:500;color:var(--g2);cursor:pointer;font-family:var(--sans)" onclick="openEditProfile()">Edit</button>' : '<button class="prof-edit" style="position:absolute;bottom:-36px;right:20px;padding:8px 18px;border-radius:12px;background:var(--gold-grad);border:none;font-size:13px;font-weight:600;color:var(--bg);cursor:pointer;font-family:var(--sans)" onclick="toast(\'Match request sent!\')">+ Match</button>') +
+    '</div>' +
+    '<div class="prof-body">' +
+      '<div class="prof-name-row"><span class="prof-name">' + escHtml(prof.full_name || prof.username || 'Player') + '</span>' +
+      (prof.is_verified ? '<div class="vdot">✓</div>' : '') + '</div>' +
+      '<div class="prof-handle">@' + escHtml(prof.username || 'player') + ' · <span style="color:var(--g1)">' + cap(prof.subscription_tier || 'free') + ' member</span></div>' +
+      (prof.bio ? '<div class="prof-bio">' + escHtml(prof.bio) + '</div>' : '<div class="prof-bio" style="color:var(--t3);font-style:italic">No bio yet — tap Edit to add one</div>') +
+      '<div class="prof-stats">' +
+        '<div class="pstat"><div class="pstat-v">' + postCount + '</div><div class="pstat-l">Posts</div></div>' +
+        '<div class="pstat"><div class="pstat-v">' + (prof.total_followers || 0) + '</div><div class="pstat-l">Followers</div></div>' +
+        '<div class="pstat"><div class="pstat-v">' + (prof.total_following || 0) + '</div><div class="pstat-l">Following</div></div>' +
+        '<div class="pstat"><div class="pstat-v">' + (prof.total_wins && prof.total_games ? Math.round(prof.total_wins/prof.total_games*100) + '%' : '—') + '</div><div class="pstat-l">Win %</div></div>' +
+      '</div>' +
+      '<div class="dupr-card">' +
+        '<div><div style="font-size:9px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px">DUPR Rating</div>' +
+          '<div class="dupr-num">' + (prof.dupr_rating ? prof.dupr_rating.toFixed(1) : '—') + '</div>' +
+          '<div style="font-size:12px;color:var(--t2);margin-top:2px">' + escHtml(prof.location_city || 'Location not set') + '</div></div>' +
+        '<div style="margin-left:auto"><span class="elite-badge">' + cap(prof.subscription_tier || 'Free') + '</span></div>' +
+      '</div>' +
+      (isOwnProfile ?
+        '<div class="prof-btns">' +
+          '<button class="prof-btn pb-def" onclick="toast(\'Profile link copied!\')">Share</button>' +
+          '<button class="prof-btn pb-def" onclick="go(\'market\')">My listings</button>' +
+          '<button class="prof-btn pb-gold" onclick="toast(\'Profile boosted 30 min ⚡\')">Boost ✦</button>' +
+        '</div>' : '') +
+      '<div class="prof-tabs">' +
+        '<div class="ptab on" id="ptab-posts" onclick="switchPTab(\'posts\',this)">Posts</div>' +
+        '<div class="ptab" id="ptab-stats" onclick="switchPTab(\'stats\',this)">Stats</div>' +
+      '</div>' +
+      '<div id="ptabContent"></div>' +
+    '</div>';
+
+  switchPTab('posts', document.getElementById('ptab-posts'), prof.id);
+}
+
+async function switchPTab(tab, el, userId) {
+  document.querySelectorAll('.ptab').forEach(function(t) { t.classList.remove('on'); });
+  if (el) el.classList.add('on');
+  var c = document.getElementById('ptabContent');
+  var uid = userId || (currentProfile ? currentProfile.id : null);
+  if (tab === 'posts') {
+    if (!sb || !uid) {
+      c.innerHTML = '<div class="pgrid">' + ['🏓','⚡','🏆','🎯','🔥','🌟'].map(function(e) { return '<div class="pthumb"><span style="font-size:28px">' + e + '</span></div>'; }).join('') + '</div>';
+      return;
+    }
+    var { data: posts } = await sb.from('posts').select('id, media_urls, type').eq('user_id', uid).eq('is_deleted', false).order('created_at', {ascending: false}).limit(12);
+    if (!posts || posts.length === 0) {
+      c.innerHTML = '<div style="text-align:center;padding:32px;color:var(--t2);font-size:13px">No posts yet.<br>Share your first pickleball moment!</div>';
+    } else {
+      c.innerHTML = '<div class="pgrid">' + posts.map(function(p) {
+        var img = p.media_urls && p.media_urls.length ? '<img src="' + p.media_urls[0] + '" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">' : '<span style="font-size:28px">🏓</span>';
+        return '<div class="pthumb">' + img + '</div>';
+      }).join('') + '</div>';
+    }
+  } else {
+    var prof = currentProfile;
+    c.innerHTML = '<div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
+      [['DUPR rating', prof ? (prof.dupr_rating || '—') : '—'],
+       ['Skill level', prof ? cap(prof.skill_level || '—') : '—'],
+       ['Play style', prof ? cap(prof.play_style || '—') : '—'],
+       ['Paddle', prof ? (prof.paddle_brand || '—') : '—'],
+       ['Games played', prof ? (prof.total_games || 0) : 0],
+       ['Total wins', prof ? (prof.total_wins || 0) : 0]].map(function(s) {
+        return '<div style="background:var(--card);border-radius:14px;padding:14px;border:1px solid var(--b2)">' +
+          '<div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">' + s[0] + '</div>' +
+          '<div style="font-family:var(--serif);font-size:20px;font-weight:500;color:var(--t1)">' + s[1] + '</div>' +
+        '</div>';
+       }).join('') + '</div>';
+  }
+}
+
+function openEditProfile() {
+  if (!currentProfile) return;
+  document.getElementById('ep-name').value = currentProfile.full_name || '';
+  document.getElementById('ep-username').value = currentProfile.username || '';
+  document.getElementById('ep-bio').value = currentProfile.bio || '';
+  document.getElementById('ep-city').value = currentProfile.location_city || '';
+  document.getElementById('ep-dupr').value = currentProfile.dupr_rating || '';
+  document.getElementById('ep-style').value = currentProfile.play_style || 'all-court';
+  document.getElementById('ep-paddle').value = currentProfile.paddle_brand || '';
+  var av = document.getElementById('epAvatar');
+  if (currentProfile.avatar_url) {
+    var img = document.createElement('img');
+    img.src = currentProfile.avatar_url;
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%';
+    av.appendChild(img);
+  }
+  document.getElementById('editProfileSheet').classList.add('open');
+}
+function closeEditProfile() { document.getElementById('editProfileSheet').classList.remove('open'); }
+
+var epPhotoFile = null;
+function previewEPPhoto(input) {
+  epPhotoFile = input.files[0];
+  if (!epPhotoFile) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var av = document.getElementById('epAvatar');
+    var img = av.querySelector('img') || document.createElement('img');
+    img.src = e.target.result;
+    img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%';
+    if (!av.querySelector('img')) av.appendChild(img);
+  };
+  reader.readAsDataURL(epPhotoFile);
+}
+
+async function saveProfile() {
+  if (!currentProfile) return;
+  var updates = {
+    full_name: document.getElementById('ep-name').value.trim(),
+    username: document.getElementById('ep-username').value.trim().toLowerCase().replace(/\s+/g,'_'),
+    bio: document.getElementById('ep-bio').value.trim() || null,
+    location_city: document.getElementById('ep-city').value.trim() || null,
+    dupr_rating: parseFloat(document.getElementById('ep-dupr').value) || null,
+    play_style: document.getElementById('ep-style').value,
+    paddle_brand: document.getElementById('ep-paddle').value.trim() || null
+  };
+  if (epPhotoFile && sb && currentUser) {
+    var ext = epPhotoFile.name.split('.').pop();
+    var path = 'avatars/' + currentUser.id + '.' + ext;
+    var { data: upData } = await sb.storage.from('avatars').upload(path, epPhotoFile, {upsert:true});
+    if (upData) {
+      var { data: urlData } = sb.storage.from('avatars').getPublicUrl(path);
+      updates.avatar_url = urlData.publicUrl;
+      epPhotoFile = null;
+    }
+  }
+  if (sb && currentUser) {
+    var { error } = await sb.from('profiles').update(updates).eq('id', currentUser.id);
+    if (error) { toast('Error: ' + error.message); return; }
+  }
+  Object.assign(currentProfile, updates);
+  toast('Profile saved!');
+  closeEditProfile();
+  updateMyAvatar();
+  renderProfile();
+}
+
+// ══════════════════════════════════════════════════════════
+//  NOTIFICATIONS
+// ══════════════════════════════════════════════════════════
+async function loadNotifications() {
+  if (!sb || !currentUser) return;
+  var { data: notifs } = await sb.from('notifications').select('*').eq('user_id', currentUser.id).order('created_at', {ascending: false}).limit(20);
+  var list = document.getElementById('notifList');
+  var dot = document.getElementById('notif-dot');
+  if (!notifs || notifs.length === 0) return;
+  var hasUnread = notifs.some(function(n) { return !n.is_read; });
+  if (dot) dot.style.display = hasUnread ? 'block' : 'none';
+  list.innerHTML = '';
+  notifs.forEach(function(n) {
+    var d = document.createElement('div');
+    d.className = 'notif-item';
+    d.onclick = async function() {
+      d.querySelector('.unread-dot') && d.querySelector('.unread-dot').remove();
+      if (!n.is_read && sb) await sb.from('notifications').update({is_read:true,read_at:new Date().toISOString()}).eq('id',n.id);
+    };
+    var em = {match:'🏓',message:'💬',like:'❤️',follow:'👤',super_dink:'⭐',brand_deal:'🤝',earning:'💰',badge:'🏅',system:'📢'}[n.type] || '🔔';
+    d.innerHTML =
+      '<div class="av" style="width:42px;height:42px;background:var(--surf);font-size:18px">' + em + '</div>' +
+      '<div class="notif-txt"><b>' + escHtml(n.title) + '</b>' + (n.body ? ' — ' + escHtml(n.body) : '') + '</div>' +
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">' +
+        '<div class="notif-time">' + getTimeAgo(n.created_at) + '</div>' +
+        (!n.is_read ? '<div class="unread-dot"></div>' : '') +
+      '</div>';
+    list.appendChild(d);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════
+function fmt(n) { return n >= 1000 ? (n/1000).toFixed(1)+'K' : String(n); }
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1).replace(/-/g,' ') : ''; }
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtAvail(a) {
+  var map = {weekday_am:'Weekday AM',weekday_pm:'Weekday PM',weekends:'Weekends',any:'Any time'};
+  return map[a] || cap(a);
+}
+function getTimeAgo(ts) {
+  if (!ts) return '';
+  var diff = (Date.now() - new Date(ts).getTime()) / 1000;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  if (diff < 604800) return Math.floor(diff/86400) + 'd ago';
+  return new Date(ts).toLocaleDateString();
+}
+</script>
+</body>
+</html>
